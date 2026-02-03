@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Commerce | Xavier OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --void-black: #020204; }
+        body { font-family: 'Rajdhani', sans-serif; background: var(--void-black); color: #e0e0e0; }
+        .quantum-panel { background: rgba(10, 14, 39, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <header class="quantum-panel sticky top-0 z-50 px-6 py-4 border-b border-green-500/20">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white">← Back to Hub</button>
+                <h1 class="font-orbitron text-2xl font-bold text-green-400">QUANTUM COMMERCE</h1>
+            </div>
+            <div class="text-sm text-gray-400">Connected Suppliers: <span class="text-green-400 font-mono">12,847</span></div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <div class="grid lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-6">
+                <div class="quantum-panel rounded-2xl p-6">
+                    <h3 class="font-orbitron text-xl font-bold mb-4 text-green-400">Product Search</h3>
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="search-input" class="flex-1 bg-black/50 border border-green-500/30 rounded-lg p-3 text-white" placeholder="Search millions of products...">
+                        <button onclick="searchProducts()" class="bg-green-600 hover:bg-green-500 px-6 py-3 rounded-lg font-bold">🔍 Search</button>
+                    </div>
+                    <div id="results" class="grid grid-cols-2 gap-4"></div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="quantum-panel rounded-2xl p-6">
+                    <h3 class="font-orbitron text-lg font-bold mb-4 text-cyan-400">Autonomous Store</h3>
+                    <button onclick="generateStore()" class="w-full bg-gradient-to-r from-green-600 to-cyan-600 py-4 rounded-lg font-bold hover:shadow-lg transition">🚀 Generate Store</button>
+                    <div class="mt-4 text-xs text-gray-500">
+                        AI will: Select winning products, generate descriptions, set pricing, configure payments, and launch.
+                    </div>
+                </div>
+
+                <div class="quantum-panel rounded-2xl p-6">
+                    <h3 class="font-orbitron text-lg font-bold mb-4 text-purple-400">Print-on-Demand</h3>
+                    <div class="border-2 border-dashed border-gray-700 rounded-lg p-4 text-center cursor-pointer hover:border-purple-500 transition">
+                        <div class="text-2xl mb-2">🎨</div>
+                        <div class="text-sm text-gray-400">Upload design to Printful</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function searchProducts() {
+            const query = document.getElementById('search-input').value;
+            const results = document.getElementById('results');
+            const suppliers = [
+                { name: 'Smart Watch Pro', price: '$12.40', margin: '340%', supplier: 'AliExpress' },
+                { name: 'Wireless Earbuds', price: '$8.50', margin: '280%', supplier: 'CJ Dropshipping' },
+                { name: 'LED Strip Lights', price: '$4.20', margin: '450%', supplier: 'Spocket' }
+            ];
+            
+            results.innerHTML = suppliers.map(s => `
+                <div class="bg-black/40 p-4 rounded-lg border border-green-500/20 hover:border-green-500/50 cursor-pointer transition">
+                    <div class="font-bold text-white">${s.name}</div>
+                    <div class="text-sm text-gray-400">${s.price} | ${s.margin} margin</div>
+                    <div class="text-xs text-green-400 mt-1">${s.supplier}</div>
+                </div>
+            `).join('');
+        }
+
+        function generateStore() {
+            alert('🏪 Autonomous store generation started...\n\nAI is selecting products, writing descriptions, and configuring payments.\n\nETA: 4 minutes');
+        }
+    </script>
+</body>
+</html>

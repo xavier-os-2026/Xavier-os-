@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing | Xavier OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --void-black: #020204; }
+        body { font-family: 'Rajdhani', sans-serif; background: var(--void-black); color: #e0e0e0; }
+        .quantum-panel { background: rgba(10, 14, 39, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .popular { border: 2px solid #00f0ff; position: relative; }
+        .popular::before { content: 'MOST POPULAR'; position: absolute; top: 20px; right: -35px; background: #00f0ff; color: black; padding: 5px 40px; font-size: 10px; font-weight: bold; transform: rotate(45deg); }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <header class="quantum-panel sticky top-0 z-50 px-6 py-4 border-b border-gray-800">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white">← Back to Hub</button>
+            <h1 class="font-orbitron text-2xl font-bold text-white">ACCESS LEVELS</h1>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        <div class="grid lg:grid-cols-4 gap-6 mb-12">
+            
+            <div class="quantum-panel rounded-2xl p-6">
+                <h3 class="font-orbitron text-xl font-bold text-gray-400">EXPLORER</h3>
+                <div class="text-3xl font-bold mt-2">$0</div>
+                <ul class="mt-4 space-y-2 text-sm text-gray-400">
+                    <li>• 1 Module</li>
+                    <li>• 10 AI ops/mo</li>
+                    <li>• 1GB Storage</li>
+                </ul>
+                <button onclick="alert('Free tier activated')" class="mt-6 w-full py-2 border border-gray-600 rounded hover:border-cyan-400 transition">Select</button>
+            </div>
+
+            <div class="quantum-panel rounded-2xl p-6">
+                <h3 class="font-orbitron text-xl font-bold text-purple-400">CREATOR</h3>
+                <div class="text-3xl font-bold mt-2">$49<span class="text-sm">/mo</span></div>
+                <ul class="mt-4 space-y-2 text-sm text-gray-400">
+                    <li>• 5 Modules</li>
+                    <li>• 100 AI ops/mo</li>
+                    <li>• 50GB Storage</li>
+                </ul>
+                <button onclick="alert('Processing subscription...')" class="mt-6 w-full bg-purple-600 py-2 rounded hover:bg-purple-500 transition">Select</button>
+            </div>
+
+            <div class="quantum-panel rounded-2xl p-6 popular bg-gradient-to-b from-cyan-900/20 to-blue-900/20">
+                <h3 class="font-orbitron text-xl font-bold text-cyan-400">AUTONOMOUS</h3>
+                <div class="text-3xl font-bold mt-2">$199<span class="text-sm">/mo</span></div>
+                <ul class="mt-4 space-y-2 text-sm text-gray-300">
+                    <li>• All 9 Modules</li>
+                    <li>• Unlimited AI</li>
+                    <li>• 500GB Storage</li>
+                    <li>• Fiverr Agents</li>
+                </ul>
+                <button onclick="alert('Processing subscription...')" class="mt-6 w-full bg-cyan-600 py-2 rounded font-bold text-black hover:bg-cyan-500 transition">Select</button>
+            </div>
+
+            <div class="quantum-panel rounded-2xl p-6 border-yellow-500/30">
+                <h3 class="font-orbitron text-xl font-bold text-yellow-400">ENTERPRISE</h3>
+                <div class="text-3xl font-bold mt-2">$999<span class="text-sm">/mo</span></div>
+                <ul class="mt-4 space-y-2 text-sm text-gray-400">
+                    <li>• Everything</li>
+                    <li>• 10 Team Seats</li>
+                    <li>• Unlimited Storage</li>
+                    <li>• White Label</li>
+                </ul>
+                <button onclick="alert('Contacting sales...')" class="mt-6 w-full bg-yellow-600 py-2 rounded font-bold text-black hover:bg-yellow-500 transition">Contact</button>
+            </div>
+        </div>
+
+        <div class="quantum-panel rounded-2xl p-8 border border-green-500/20 bg-green-900/5">
+            <div class="flex items-center gap-4">
+                <div class="text-4xl">🔐</div>
+                <div>
+                    <h3 class="font-orbitron text-lg font-bold text-green-400">Hidden Access Protocols</h3>
+                    <p class="text-gray-400 text-sm mt-1">Certain sequences grant unlimited access. System exploration recommended.</p>
+                    <p class="text-xs text-gray-600 mt-2 font-mono">[TERMINAL: CTRL+SHIFT+X] | [MOBILE: TRIPLE-TAP LOGO]</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

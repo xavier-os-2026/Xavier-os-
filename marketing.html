@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing AI | Xavier OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --quantum-blue: #00f0ff; --neural-purple: #b026ff; --void-black: #020204; }
+        body { font-family: 'Rajdhani', sans-serif; background: var(--void-black); color: #e0e0e0; }
+        .quantum-panel { background: rgba(10, 14, 39, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .funnel-step { position: relative; padding-left: 2rem; border-left: 2px solid rgba(176, 38, 255, 0.3); }
+        .funnel-step::before { content: ''; position: absolute; left: -6px; top: 0; width: 10px; height: 10px; background: var(--neural-purple); border-radius: 50%; }
+        .loading-bar { height: 4px; background: linear-gradient(90deg, var(--neural-purple), var(--quantum-blue)); background-size: 200% 100%; animation: loading 2s infinite; }
+        @keyframes loading { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <header class="quantum-panel sticky top-0 z-50 px-6 py-4 border-b border-purple-500/20">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white">← Back to Hub</button>
+                <h1 class="font-orbitron text-2xl font-bold text-purple-400">AUTONOMOUS MARKETING</h1>
+            </div>
+            <div class="text-sm text-gray-400">Today's Revenue: <span class="text-green-400 font-mono">$4,329</span></div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-8 grid lg:grid-cols-2 gap-8">
+        
+        <div class="space-y-6">
+            <div class="quantum-panel rounded-2xl p-6">
+                <h3 class="font-orbitron text-xl font-bold mb-6 text-purple-400">Quantum Funnel Builder</h3>
+                
+                <div class="space-y-4 mb-6">
+                    <input type="url" id="product-url" class="w-full bg-black/50 border border-purple-500/30 rounded-lg p-3 text-white focus:border-purple-500 focus:outline-none" placeholder="Product or Affiliate URL">
+                    <select id="platform" class="w-full bg-black/50 border border-purple-500/30 rounded-lg p-3 text-white">
+                        <option>ClickBank</option>
+                        <option>JVZoo</option>
+                        <option>Amazon Associates</option>
+                        <option>Shopify</option>
+                    </select>
+                    <input type="text" id="audience" class="w-full bg-black/50 border border-purple-500/30 rounded-lg p-3 text-white" placeholder="Target audience (e.g., Entrepreneurs aged 25-45)">
+                    <input type="range" min="50" max="10000" value="500" class="w-full accent-purple-500" oninput="document.getElementById('budget-display').textContent = '$' + this.value">
+                    <div class="text-right text-purple-400 font-mono" id="budget-display">$500</div>
+                </div>
+                
+                <button onclick="generateFunnel()" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 py-4 rounded-lg font-bold text-lg hover:shadow-lg hover:shadow-purple-500/50 transition">🚀 INITIATE AUTONOMOUS BUILD</button>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div id="generation-status" class="hidden quantum-panel rounded-2xl p-6 border-2 border-purple-500/50">
+                <h3 class="font-orbitron text-lg font-bold mb-4 text-purple-400">AI Generation in Progress</h3>
+                <div id="progress-steps" class="space-y-4"></div>
+                <div class="mt-4 loading-bar rounded-full"></div>
+            </div>
+
+            <div id="funnel-preview" class="hidden quantum-panel rounded-2xl p-6">
+                <h3 class="font-orbitron text-lg font-bold mb-4 text-green-400">✓ Funnel Deployed</h3>
+                <div class="space-y-4 mb-6">
+                    <div class="funnel-step pb-4">
+                        <div class="font-bold text-cyan-400">Landing Page</div>
+                        <div class="text-sm text-gray-400">High-converting headline + video sales letter</div>
+                    </div>
+                    <div class="funnel-step pb-4">
+                        <div class="font-bold text-purple-400">Email Sequence</div>
+                        <div class="text-sm text-gray-400">7-day automated follow-up series</div>
+                    </div>
+                    <div class="funnel-step pb-4">
+                        <div class="font-bold text-yellow-400">Ad Creatives</div>
+                        <div class="text-sm text-gray-400">12 variants for Facebook, Google, TikTok</div>
+                    </div>
+                    <div class="funnel-step">
+                        <div class="font-bold text-green-400">Traffic Automation</div>
+                        <div class="text-sm text-gray-400">AI-managed ad spend</div>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="alert('Funnel URL copied!')" class="flex-1 bg-cyan-600 hover:bg-cyan-500 py-3 rounded font-bold transition">Copy URL</button>
+                    <button onclick="alert('Campaign launching...')" class="flex-1 bg-green-600 hover:bg-green-500 py-3 rounded font-bold transition">Launch</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function generateFunnel() {
+            if (!document.getElementById('product-url').value) return alert('Enter product URL');
+            
+            const status = document.getElementById('generation-status');
+            const steps = document.getElementById('progress-steps');
+            const preview = document.getElementById('funnel-preview');
+            
+            status.classList.remove('hidden');
+            preview.classList.add('hidden');
+            
+            const generationSteps = [
+                'Scraping product page...', 'Analyzing competitors...', 'Writing copy...', 
+                'Generating creatives...', 'Setting up emails...', 'Configuring ads...', 'Optimizing...', 'Deploying...'
+            ];
+            
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < generationSteps.length) {
+                    steps.innerHTML += `<div class="flex items-center gap-3 text-sm"><span class="text-purple-400">⚡</span><span>${generationSteps[i]}</span></div>`;
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        status.classList.add('hidden');
+                        preview.classList.remove('hidden');
+                        steps.innerHTML = '';
+                    }, 500);
+                }
+            }, 800);
+        }
+    </script>
+</body>
+</html>

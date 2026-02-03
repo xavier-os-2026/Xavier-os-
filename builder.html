@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Builder | Xavier OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&family=Fira+Code&display=swap" rel="stylesheet">
+    <style>
+        :root { --void-black: #020204; }
+        body { font-family: 'Rajdhani', sans-serif; background: var(--void-black); color: #e0e0e0; }
+        .quantum-panel { background: rgba(10, 14, 39, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .code-font { font-family: 'Fira Code', monospace; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <header class="quantum-panel sticky top-0 z-50 px-6 py-4 border-b border-pink-500/20">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white">← Back to Hub</button>
+                <h1 class="font-orbitron text-2xl font-bold text-pink-400">VIBE BUILDER</h1>
+            </div>
+            <div class="text-sm text-gray-400">Natural Language → Production Code</div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-8 grid lg:grid-cols-2 gap-8 h-[calc(100vh-100px)]">
+        
+        <div class="flex flex-col gap-6">
+            <div class="quantum-panel rounded-2xl p-6 flex-1 flex flex-col">
+                <h3 class="font-orbitron text-lg font-bold mb-4 text-pink-400">Describe Your Application</h3>
+                <textarea id="vibe-prompt" class="flex-1 w-full bg-black/50 border border-pink-500/30 rounded-lg p-4 text-white resize-none focus:border-pink-500 focus:outline-none mb-4" placeholder="Example: 'Create a dark-themed crypto dashboard with real-time charts, MetaMask integration, and AI trading signals. Use glassmorphism and neon accents.'"></textarea>
+                
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <select id="app-type" class="bg-black/50 border border-pink-500/30 rounded-lg p-3 text-white">
+                        <option>React Web App</option>
+                        <option>Vue Dashboard</option>
+                        <option>Mobile App</option>
+                        <option>E-commerce</option>
+                    </select>
+                    <select class="bg-black/50 border border-pink-500/30 rounded-lg p-3 text-white">
+                        <option>Simple</option>
+                        <option>Standard</option>
+                        <option>Complex</option>
+                    </select>
+                </div>
+                
+                <button onclick="vibeCode()" class="w-full bg-gradient-to-r from-pink-600 to-purple-600 py-4 rounded-lg font-bold text-lg hover:shadow-lg hover:shadow-pink-500/50 transition">✨ GENERATE APPLICATION</button>
+            </div>
+        </div>
+
+        <div class="quantum-panel rounded-2xl p-6 flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-orbitron text-lg font-bold text-cyan-400">Generated Code</h3>
+                <button onclick="copyCode()" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded transition">Copy</button>
+            </div>
+            <div id="code-container" class="flex-1 bg-black/80 rounded-lg p-4 code-font text-sm overflow-auto border border-gray-800 text-gray-300">
+                <div class="text-gray-600 italic">// AI will generate production-ready code here...</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function vibeCode() {
+            const prompt = document.getElementById('vibe-prompt').value;
+            const container = document.getElementById('code-container');
+            if (!prompt) return;
+            
+            container.innerHTML = '<div class="text-pink-400">Analyzing requirements...</div>';
+            
+            setTimeout(() => {
+                container.innerHTML = `<div class="text-green-400">// Generated React + Tailwind App</div>
+<code class="text-xs text-gray-300">
+import React, { useState, useEffect } from 'react';
+
+export default function App() {
+  const [data, setData] = useState(null);
+  
+  useEffect(() => {
+    fetch('/api/ai-optimized')
+      .then(r => r.json())
+      .then(setData);
+  }, []);
+  
+  return (
+    &lt;div className="min-h-screen bg-black text-white"&gt;
+      &lt;header className="p-6 border-b border-cyan-500/30"&gt;
+        &lt;h1 className="text-3xl font-bold text-cyan-400"&gt;${document.getElementById('app-type').value}&lt;/h1&gt;
+      &lt;/header&gt;
+      &lt;main className="p-6"&gt;
+        {data && data.map(item => (
+          &lt;div key={item.id} className="quantum-panel p-4 rounded mb-4"&gt;
+            {item.content}
+          &lt;/div&gt;
+        ))}
+      &lt;/main&gt;
+    &lt;/div&gt;
+  );
+}
+</code>`;
+            }, 1500);
+        }
+
+        function copyCode() {
+            navigator.clipboard.writeText(document.getElementById('code-container').innerText);
+            alert('Code copied!');
+        }
+    </script>
+</body>
+</html>

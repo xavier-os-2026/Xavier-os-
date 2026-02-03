@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous Agents | Xavier OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --void-black: #020204; }
+        body { font-family: 'Rajdhani', sans-serif; background: var(--void-black); color: #e0e0e0; }
+        .quantum-panel { background: rgba(10, 14, 39, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <header class="quantum-panel sticky top-0 z-50 px-6 py-4 border-b border-red-500/20">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white">← Back to Hub</button>
+                <h1 class="font-orbitron text-2xl font-bold text-red-400">AUTONOMOUS AGENTS</h1>
+            </div>
+            <div class="text-sm text-gray-400">Agent Status: <span class="text-green-400 font-mono">Standby</span></div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <div class="grid lg:grid-cols-2 gap-8">
+            <div class="quantum-panel rounded-2xl p-6 border border-red-500/30 bg-red-900/5">
+                <h3 class="font-orbitron text-xl font-bold mb-4 text-red-400">Deploy Fiverr Agent</h3>
+                <div class="space-y-4">
+                    <input type="email" placeholder="Fiverr Account Email" class="w-full bg-black/50 border border-red-500/30 rounded-lg p-3 text-white">
+                    <select class="w-full bg-black/50 border border-red-500/30 rounded-lg p-3 text-white">
+                        <option>Web Development</option>
+                        <option>Graphic Design</option>
+                        <option>Video Editing</option>
+                        <option>AI Services</option>
+                    </select>
+                    <button onclick="deployAgent()" class="w-full bg-red-600 hover:bg-red-500 py-3 rounded-lg font-bold transition">🤖 DEPLOY AGENT</button>
+                </div>
+                <div class="mt-4 text-xs text-gray-400">AI will browse projects, submit proposals, and deliver work autonomously.</div>
+            </div>
+
+            <div class="quantum-panel rounded-2xl p-6">
+                <h3 class="font-orbitron text-xl font-bold mb-4 text-cyan-400">Agent Activity Log</h3>
+                <div id="agent-log" class="h-64 bg-black/60 rounded p-4 font-mono text-xs overflow-y-auto text-gray-400 space-y-1">
+                    <div>> System initialized...</div>
+                    <div>> Waiting for deployment...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function deployAgent() {
+            const log = document.getElementById('agent-log');
+            const actions = [
+                '> Initializing browser automation...',
+                '> Logging into Fiverr...',
+                '> Scanning available projects...',
+                '> Match found: "Build React website" - $500',
+                '> Generating proposal...',
+                '> Submitting bid...',
+                '> Proposal accepted! Starting project...'
+            ];
+            
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < actions.length) {
+                    log.innerHTML += `<div>${actions[i]}</div>`;
+                    log.scrollTop = log.scrollHeight;
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    log.innerHTML += `<div class="text-green-400">> Project delivered. $500 earned.</div>`;
+                }
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

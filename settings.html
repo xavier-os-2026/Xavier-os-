@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | Xavier OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --void-black: #020204; }
+        body { font-family: 'Rajdhani', sans-serif; background: var(--void-black); color: #e0e0e0; }
+        .quantum-panel { background: rgba(10, 14, 39, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <header class="quantum-panel sticky top-0 z-50 px-6 py-4 border-b border-gray-800">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white">← Back to Hub</button>
+                <h1 class="font-orbitron text-2xl font-bold text-white">SYSTEM SETTINGS</h1>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-6 py-8 space-y-6">
+        <div class="quantum-panel rounded-2xl p-6">
+            <h3 class="font-orbitron text-lg font-bold mb-4 text-cyan-400">Quantum Encryption</h3>
+            <div class="flex justify-between items-center mb-4">
+                <span>Encryption Level</span>
+                <select class="bg-black/50 border border-cyan-500/30 rounded p-2 text-white">
+                    <option>AES-4096 (Maximum)</option>
+                    <option>Quantum Key Distribution</option>
+                </select>
+            </div>
+            <div class="flex justify-between items-center">
+                <span>Auto-Shred Files</span>
+                <button class="bg-gray-800 px-4 py-2 rounded text-sm">Configure</button>
+            </div>
+        </div>
+
+        <div class="quantum-panel rounded-2xl p-6">
+            <h3 class="font-orbitron text-lg font-bold mb-4 text-purple-400">AI Preferences</h3>
+            <div class="flex justify-between items-center mb-4">
+                <span>Consciousness Level</span>
+                <input type="range" class="w-32 accent-purple-500" value="98">
+            </div>
+            <div class="flex justify-between items-center">
+                <span>Voice Synthesis</span>
+                <button class="bg-green-600/30 text-green-400 px-4 py-2 rounded text-sm border border-green-500">Active</button>
+            </div>
+        </div>
+
+        <div class="quantum-panel rounded-2xl p-6">
+            <h3 class="font-orbitron text-lg font-bold mb-4 text-yellow-400">Access Control</h3>
+            <div class="text-sm text-gray-400 mb-4">Current Level: <span id="current-level" class="text-white font-bold">Standard</span></div>
+            <button onclick="window.location.href='pricing.html'" class="w-full bg-yellow-600/30 border border-yellow-500 py-3 rounded hover:bg-yellow-600/50 transition">Upgrade Access</button>
+        </div>
+
+        <div class="quantum-panel rounded-2xl p-6 border border-red-500/30 bg-red-900/5">
+            <h3 class="font-orbitron text-lg font-bold mb-4 text-red-400">Danger Zone</h3>
+            <button onclick="localStorage.clear(); alert('Session cleared'); window.location.reload()" class="w-full bg-red-600/30 border border-red-500 py-3 rounded hover:bg-red-600/50 transition text-red-400">Purge All Data</button>
+        </div>
+    </main>
+
+    <script>
+        const session = localStorage.getItem('xavier_quantum_session');
+        if (session) {
+            document.getElementById('current-level').textContent = 'Architect';
+            document.getElementById('current-level').className = 'text-green-400 font-bold';
+        }
+    </script>
+</body>
+</html>
