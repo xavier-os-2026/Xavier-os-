@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access | Xavier OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="admin-fix.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { background: #020204; color: #e0e0e0; font-family: 'Rajdhani', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .panel { background: rgba(10, 14, 39, 0.9); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 2rem; max-width: 400px; width: 90%; text-align: center; }
+        .hidden-input { background: transparent; border: none; border-bottom: 2px solid rgba(255,255,255,0.1); color: #00f0ff; font-size: 18px; text-align: center; width: 100%; outline: none; letter-spacing: 0.3em; }
+        .hidden-input:focus { border-bottom-color: #00f0ff; }
+        .btn { background: rgba(255,0,64,0.2); border: 1px solid rgba(255,0,64,0.5); color: #ff0040; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 20px; width: 100%; }
+        .btn:hover { background: rgba(255,0,64,0.3); }
+        .back { color: #666; text-decoration: none; display: block; margin-top: 20px; font-size: 14px; }
+        .back:hover { color: #999; }
+    </style>
+</head>
+<body>
+
+    <div class="panel">
+        <div style="font-size: 48px; margin-bottom: 20px;">◉</div>
+        <h1 class="font-orbitron text-xl text-gray-400 mb-6">SYSTEM LOCKED</h1>
+        
+        <input type="text" id="code-input" class="hidden-input" placeholder="" autocomplete="off">
+        
+        <button onclick="unlock()" class="btn">ACCESS</button>
+        
+        <a href="index.html" class="back">← Return</a>
+    </div>
+
+    <script>
+        // Auto-focus input
+        document.getElementById('code-input').focus();
+        
+        // Check if already unlocked
+        if (XavierUnlock.isAdmin()) {
+            window.location.href = 'admin.html';
+        }
+        
+        function unlock() {
+            const code = document.getElementById('code-input').value;
+            const result = XavierUnlock.unlock(code);
+            
+            if (result.success) {
+                window.location.href = 'admin.html';
+            } else {
+                document.getElementById('code-input').value = '';
+                document.getElementById('code-input').style.borderBottomColor = '#ff0040';
+                setTimeout(() => {
+                    document.getElementById('code-input').style.borderBottomColor = 'rgba(255,255,255,0.1)';
+                }, 1000);
+            }
+        }
+        
+        // Enter key support
+        document.getElementById('code-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') unlock();
+        });
+    </script>
+
+</body>
+</html>

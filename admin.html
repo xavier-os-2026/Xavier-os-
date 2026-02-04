@@ -1,295 +1,70 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#000000">
-    <title>Admin | Xavier OS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="guard.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <script src="admin-fix.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { background: #020204; color: #e0e0e0; font-family: 'Rajdhani', sans-serif; }
-        .quantum-panel { background: rgba(10, 14, 39, 0.9); border: 1px solid rgba(255, 0, 64, 0.1); }
-        .revenue-card { background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(20,20,40,0.8)); border: 1px solid; }
-        .live-indicator { animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        body { background: #020204; color: #e0e0e0; font-family: 'Rajdhani', sans-serif; min-height: 100vh; }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .panel { background: rgba(10, 14, 39, 0.8); border: 1px solid rgba(255, 0, 64, 0.3); border-radius: 16px; padding: 1.5rem; }
+        .metric { background: rgba(255,0,64,0.1); border: 1px solid rgba(255,0,64,0.2); border-radius: 12px; padding: 1rem; }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="p-4 md:p-8">
 
-    <div id="auth-screen" class="quantum-panel p-8 rounded-2xl max-w-md w-full border border-red-500/30 mx-auto mt-20">
-        <h1 class="text-2xl font-bold text-red-400 mb-2 text-center">🔐 ADMIN ACCESS</h1>
-        <p class="text-sm text-gray-400 mb-6 text-center">Hardware key or emergency sequence required</p>
-        
-        <button onclick="authenticate()" class="w-full bg-red-600 hover:bg-red-500 py-4 rounded-lg font-bold text-lg transition mb-4">
-            Use Passkey (WebAuthn)
-        </button>
-        
-        <div class="text-xs text-gray-500 text-center mb-6">
-            <p>Biometric authentication</p>
-            <p>Zero server cost</p>
+    <header class="flex justify-between items-center mb-8">
+        <div class="flex items-center gap-4">
+            <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white text-2xl">←</button>
+            <h1 class="font-orbitron text-2xl font-bold text-red-400">SYSTEM CONTROL</h1>
         </div>
+        <button onclick="XavierUnlock.logout()" class="text-red-400 text-sm border border-red-500/50 px-4 py-2 rounded hover:bg-red-500/20">Logout</button>
+    </header>
 
-        <div class="mt-6 pt-6 border-t border-gray-800">
-            <p class="text-xs text-gray-600 mb-2">Emergency sequence:</p>
-            <input type="password" id="emergency-code" class="w-full bg-black/50 border border-red-500/30 rounded p-2 text-white mb-2" placeholder="••••••••••••">
-            <button onclick="checkEmergency()" class="w-full bg-gray-800 hover:bg-gray-700 py-2 rounded text-sm">Unlock System</button>
-        </div>
+    <div id="locked" class="hidden panel text-center py-12">
+        <div class="text-4xl mb-4">◉</div>
+        <h2 class="font-orbitron text-xl text-gray-400 mb-4">Access Denied</h2>
+        <button onclick="window.location.href='admin-unlock.html'" class="bg-red-600 px-6 py-3 rounded font-bold">Authenticate</button>
     </div>
 
-    <div id="admin-panel" class="hidden w-full max-w-7xl mx-auto p-6">
-        <header class="quantum-panel p-6 rounded-2xl mb-6 flex justify-between items-center border border-red-500/30">
-            <div>
-                <h1 class="text-2xl font-bold text-red-400">ADMIN DASHBOARD</h1>
-                <p class="text-xs text-gray-500">Real-time Platform Revenue Monitoring</p>
-            </div>
-            <div class="flex gap-4">
-                <div class="text-right">
-                    <div class="text-xs text-gray-500">Total Revenue</div>
-                    <div class="text-2xl text-green-400 font-bold font-orbitron">$<span id="header-total">0.00</span></div>
-                </div>
-                <button onclick="XavierSecurity.logout()" class="bg-red-600/30 border border-red-500 text-red-400 px-4 py-2 rounded">Logout</button>
-            </div>
-        </header>
-
-        <!-- Live Revenue Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="revenue-card p-6 rounded-2xl border-green-500/30">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs text-gray-400 uppercase">Shop Sales (4%)</span>
-                    <span class="w-2 h-2 bg-green-500 rounded-full live-indicator"></span>
-                </div>
-                <div class="text-3xl font-bold text-green-400 font-orbitron">$<span id="rev-shops">0.00</span></div>
-                <div class="text-xs text-green-500/70 mt-2">From Holoverse commerce</div>
-            </div>
-            
-            <div class="revenue-card p-6 rounded-2xl border-cyan-500/30">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs text-gray-400 uppercase">Transactions (2%)</span>
-                    <span class="w-2 h-2 bg-cyan-500 rounded-full live-indicator"></span>
-                </div>
-                <div class="text-3xl font-bold text-cyan-400 font-orbitron">$<span id="rev-tx">0.00</span></div>
-                <div class="text-xs text-cyan-500/70 mt-2">P2P transfers & exchanges</div>
-            </div>
-            
-            <div class="revenue-card p-6 rounded-2xl border-purple-500/30">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs text-gray-400 uppercase">Task Rewards (20%)</span>
-                    <span class="w-2 h-2 bg-purple-500 rounded-full live-indicator"></span>
-                </div>
-                <div class="text-3xl font-bold text-purple-400 font-orbitron">$<span id="rev-tasks">0.00</span></div>
-                <div class="text-xs text-purple-500/70 mt-2">Job & game commissions</div>
-            </div>
-            
-            <div class="revenue-card p-6 rounded-2xl border-yellow-500/30 bg-yellow-900/10">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs text-gray-400 uppercase">Total Revenue</span>
-                    <span class="w-2 h-2 bg-yellow-500 rounded-full live-indicator"></span>
-                </div>
-                <div class="text-4xl font-bold text-yellow-400 font-orbitron">$<span id="rev-total">0.00</span></div>
-                <div class="text-xs text-yellow-500/70 mt-2">Platform lifetime earnings</div>
-            </div>
+    <div id="dashboard" class="hidden grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="metric">
+            <div class="text-gray-400 text-sm">Revenue</div>
+            <div class="text-2xl font-bold text-green-400">$0.00</div>
         </div>
-
-        <!-- Live Activity Feed -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="quantum-panel rounded-2xl p-6">
-                <h3 class="font-bold text-white mb-4 flex items-center gap-2">
-                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    Live Transactions
-                </h3>
-                <div id="transaction-feed" class="space-y-3 h-64 overflow-y-auto font-mono text-sm">
-                    <div class="text-gray-500 text-center py-8">No transactions yet</div>
-                </div>
-            </div>
-
-            <div class="quantum-panel rounded-2xl p-6">
-                <h3 class="font-bold text-white mb-4">System Actions</h3>
-                <div class="space-y-3">
-                    <button onclick="exportRevenueData()" class="w-full bg-cyan-600/30 border border-cyan-500 py-3 rounded text-cyan-400 hover:bg-cyan-600/50 transition text-left px-4 flex justify-between">
-                        <span>📊 Export Revenue Data</span>
-                        <span>→</span>
-                    </button>
-                    <button onclick="syncHoloverse()" class="w-full bg-purple-600/30 border border-purple-500 py-3 rounded text-purple-400 hover:bg-purple-600/50 transition text-left px-4 flex justify-between">
-                        <span>🌐 Sync Holoverse Data</span>
-                        <span>→</span>
-                    </button>
-                    <button onclick="backupDatabase()" class="w-full bg-yellow-600/30 border border-yellow-500 py-3 rounded text-yellow-400 hover:bg-yellow-600/50 transition text-left px-4 flex justify-between">
-                        <span>💾 Backup All Data</span>
-                        <span>→</span>
-                    </button>
-                    <button onclick="purgeData()" class="w-full bg-red-600/30 border border-red-500 py-3 rounded text-red-400 hover:bg-red-600/50 transition text-left px-4 flex justify-between">
-                        <span>⚠️ Purge Database</span>
-                        <span>→</span>
-                    </button>
-                </div>
-            </div>
+        <div class="metric">
+            <div class="text-gray-400 text-sm">Users</div>
+            <div class="text-2xl font-bold text-cyan-400">0</div>
         </div>
-
-        <!-- User Stats -->
-        <div class="quantum-panel rounded-2xl p-6 mt-6">
-            <h3 class="font-bold text-white mb-4">Platform Statistics</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div>
-                    <div class="text-2xl font-bold text-cyan-400" id="stat-users">0</div>
-                    <div class="text-xs text-gray-500">Total Users</div>
-                </div>
-                <div>
-                    <div class="text-2xl font-bold text-purple-400" id="stat-shops">0</div>
-                    <div class="text-xs text-gray-500">Active Shops</div>
-                </div>
-                <div>
-                    <div class="text-2xl font-bold text-green-400" id="stat-properties">0</div>
-                    <div class="text-xs text-gray-500">Properties Owned</div>
-                </div>
-                <div>
-                    <div class="text-2xl font-bold text-yellow-400" id="stat-jobs">0</div>
-                    <div class="text-xs text-gray-500">Jobs Completed</div>
-                </div>
+        <div class="metric">
+            <div class="text-gray-400 text-sm">Pro Tier</div>
+            <div class="text-2xl font-bold text-purple-400">0</div>
+        </div>
+        <div class="metric">
+            <div class="text-gray-400 text-sm">Status</div>
+            <div class="text-2xl font-bold text-green-400">Online</div>
+        </div>
+        
+        <div class="panel md:col-span-2 lg:col-span-4">
+            <h3 class="font-orbitron text-lg text-cyan-400 mb-4">Quick Actions</h3>
+            <div class="flex gap-3 flex-wrap">
+                <button onclick="XavierUnlock.forceUnlock()" class="bg-red-500/20 border border-red-500/50 text-red-400 px-4 py-2 rounded text-sm">Force Verify</button>
+                <button onclick="localStorage.clear(); location.reload()" class="bg-gray-800 px-4 py-2 rounded text-sm">Clear Data</button>
+                <button onclick="window.open('holoworld.html')" class="bg-cyan-500/20 border border-cyan-500/50 text-cyan-400 px-4 py-2 rounded text-sm">HoloWorld</button>
             </div>
         </div>
     </div>
 
     <script>
-        const _0x5f2e = atob('YXJjaGl0ZWN0X3hfMjAyNQ==');
-
-        if (localStorage.getItem('admin_session') === 'true') showAdmin();
-
-        async function authenticate() {
-            try {
-                const challenge = new Uint8Array(32);
-                window.crypto.getRandomValues(challenge);
-                
-                const credential = await navigator.credentials.create({
-                    publicKey: {
-                        challenge: challenge,
-                        rp: { name: "Xavier OS", id: window.location.hostname },
-                        user: { id: Uint8Array.from("admin", c => c.charCodeAt(0)), name: "admin", displayName: "Admin" },
-                        pubKeyCredParams: [{ alg: -7, type: "public-key" }],
-                        authenticatorSelection: { authenticatorAttachment: "platform" },
-                        attestation: "direct"
-                    }
-                });
-                
-                if (credential) {
-                    localStorage.setItem('admin_session', 'true');
-                    showAdmin();
-                }
-            } catch(e) {
-                alert('Passkey failed. Use emergency sequence.');
-            }
-        }
-
-        function checkEmergency() {
-            const input = document.getElementById('emergency-code').value;
-            if (input === _0x5f2e || input === 'architect_x_2025') {
-                localStorage.setItem('admin_session', 'true');
-                localStorage.setItem('xavier_quantum_session', JSON.stringify({tier: 'architect', timestamp: Date.now()}));
-                showAdmin();
-            } else {
-                alert('Access denied');
-            }
-        }
-
-        function showAdmin() {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('admin-panel').classList.remove('hidden');
-            startRevenueTracking();
-            updateStats();
-        }
-
-        function startRevenueTracking() {
-            // Update every 2 seconds
-            setInterval(() => {
-                const stats = XavierRevenue ? XavierRevenue.getStats() : {
-                    shops: parseFloat(localStorage.getItem('xavier_revenue_commerce') || 0),
-                    tx: parseFloat(localStorage.getItem('xavier_revenue_tx') || 0),
-                    tasks: parseFloat(localStorage.getItem('xavier_revenue_tasks') || 0)
-                };
-                
-                document.getElementById('rev-shops').textContent = stats.shops.toFixed(2);
-                document.getElementById('rev-tx').textContent = stats.tx.toFixed(2);
-                document.getElementById('rev-tasks').textContent = stats.tasks.toFixed(2);
-                document.getElementById('rev-total').textContent = (stats.shops + stats.tx + stats.tasks).toFixed(2);
-                document.getElementById('header-total').textContent = (stats.shops + stats.tx + stats.tasks).toFixed(2);
-                
-                // Simulate live transactions
-                if (Math.random() > 0.7) addTransactionToFeed();
-            }, 2000);
-        }
-
-        function addTransactionToFeed() {
-            const feed = document.getElementById('transaction-feed');
-            const types = ['Shop Sale', 'P2P Transfer', 'Job Commission', 'Property Tax', 'Vehicle Sale'];
-            const amounts = [Math.random() * 100, Math.random() * 50, Math.random() * 25, Math.random() * 10, Math.random() * 200];
-            const type = types[Math.floor(Math.random() * types.length)];
-            const amount = amounts[Math.floor(Math.random() * amounts.length)];
-            
-            const div = document.createElement('div');
-            div.className = 'flex justify-between items-center p-2 bg-black/30 rounded border-l-2 border-green-500';
-            div.innerHTML = `
-                <span class="text-gray-400">${new Date().toLocaleTimeString()}</span>
-                <span class="text-white">${type}</span>
-                <span class="text-green-400">+$${amount.toFixed(2)}</span>
-            `;
-            
-            feed.insertBefore(div, feed.firstChild);
-            if (feed.children.length > 20) feed.removeChild(feed.lastChild);
-        }
-
-        function updateStats() {
-            // Load from localStorage
-            const users = Object.keys(localStorage).filter(k => k.startsWith('xavier_')).length;
-            const shops = parseInt(localStorage.getItem('xavier_shop_count') || '0');
-            const props = parseInt(localStorage.getItem('xavier_property_count') || '0');
-            const jobs = parseInt(localStorage.getItem('xavier_jobs_completed') || '0');
-            
-            document.getElementById('stat-users').textContent = users;
-            document.getElementById('stat-shops').textContent = shops;
-            document.getElementById('stat-properties').textContent = props;
-            document.getElementById('stat-jobs').textContent = jobs;
-        }
-
-        function exportRevenueData() {
-            const data = {
-                revenue: XavierRevenue ? XavierRevenue.getStats() : {},
-                timestamp: new Date().toISOString(),
-                export_type: 'financial'
-            };
-            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `xavier-revenue-${Date.now()}.json`;
-            a.click();
-        }
-
-        function syncHoloverse() {
-            alert('🌐 Holoverse sync complete\n\nRevenue streams integrated\nUser data synchronized\nProperty records updated');
-        }
-
-        function backupDatabase() {
-            const backup = {
-                localStorage: {...localStorage},
-                timestamp: new Date().toISOString()
-            };
-            const blob = new Blob([JSON.stringify(backup)], {type: 'application/json'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `xavier-backup-${Date.now()}.json`;
-            a.click();
-        }
-
-        function purgeData() {
-            if (confirm('⚠️ WARNING: This will delete ALL platform data including revenue records. This action cannot be undone. Continue?')) {
-                if (prompt('Type "DELETE" to confirm:') === 'DELETE') {
-                    localStorage.clear();
-                    alert('All data purged. Reloading...');
-                    location.reload();
-                }
-            }
+        if (!XavierUnlock.isAdmin()) {
+            document.getElementById('locked').classList.remove('hidden');
+        } else {
+            document.getElementById('dashboard').classList.remove('hidden');
         }
     </script>
+
 </body>
 </html>

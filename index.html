@@ -2,233 +2,77 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#020204">
-    <title>Xavier OS | Quantum Ecosystem</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xavier OS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="admin-fix.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background: #020204; 
-            color: #e0e0e0; 
-            font-family: 'Rajdhani', sans-serif;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+        body { background: #020204; color: #e0e0e0; font-family: 'Rajdhani', sans-serif; min-height: 100vh; }
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
-        .bg-grid {
-            position: fixed;
-            inset: 0;
-            background-image: 
-                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            pointer-events: none;
-            z-index: 0;
-        }
-        .quantum-panel {
-            background: rgba(10, 14, 39, 0.6);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(0, 240, 255, 0.2);
-            transition: all 0.3s;
-        }
-        .quantum-panel:hover {
-            border-color: rgba(0, 240, 255, 0.5);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 40px rgba(0, 240, 255, 0.1);
-        }
-        .tier-badge {
-            position: absolute;
-            top: -10px;
-            right: 10px;
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .tier-pro { background: #b026ff; color: white; }
-        .tier-admin { background: #ff0040; color: white; }
-        .tier-free { background: #333; color: #888; }
-        .quantum-btn {
-            background: linear-gradient(135deg, rgba(0,240,255,0.1), rgba(176,38,255,0.1));
-            border: 1px solid rgba(0,240,255,0.3);
-            color: #00f0ff;
-            transition: all 0.3s;
-        }
-        .quantum-btn:hover {
-            background: rgba(0,240,255,0.2);
-            box-shadow: 0 0 20px rgba(0,240,255,0.3);
-        }
-        @media (max-width: 768px) {
-            .quantum-panel { margin: 0.5rem; }
-        }
+        .panel { background: rgba(10, 14, 39, 0.6); border: 1px solid rgba(0, 240, 255, 0.2); backdrop-filter: blur(20px); transition: all 0.3s; }
+        .panel:hover { border-color: rgba(0, 240, 255, 0.5); transform: translateY(-2px); }
+        .badge { position: absolute; top: -8px; right: 8px; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; }
+        .pro { background: #b026ff; color: white; }
+        .restricted { background: #ff0040; color: white; }
+        .free { background: #333; color: #888; }
     </style>
 </head>
-<body>
-    <div class="bg-grid"></div>
-    
-    <div class="relative z-10 min-h-screen p-4 md:p-8">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center text-2xl font-bold font-orbitron cursor-pointer" id="logo">
-                    X
-                </div>
-                <div>
-                    <h1 class="font-orbitron text-2xl md:text-3xl font-bold text-cyan-400">XAVIER OS</h1>
-                    <p class="text-gray-500 text-sm">Quantum Ecosystem v3.0</p>
-                </div>
-            </div>
-            
-            <div class="flex gap-3">
-                <button onclick="window.location.href='settings.html'" class="quantum-btn px-4 py-2 rounded-lg text-sm font-bold">
-                    Settings
-                </button>
-                <button id="admin-btn" onclick="goToAdmin()" class="quantum-btn px-4 py-2 rounded-lg text-sm font-bold border-red-500/50 text-red-400 hidden">
-                    System
-                </button>
-            </div>
-        </header>
-        
-        <div class="quantum-panel rounded-xl p-4 mb-8 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                <span class="text-sm text-gray-400">System Online</span>
-            </div>
-            <div class="text-sm">
-                <span class="text-gray-500">Access Tier:</span>
-                <span id="tier-display" class="font-bold text-cyan-400 ml-2">Free</span>
+<body class="p-4 md:p-8">
+
+    <header class="flex justify-between items-center mb-8">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center text-2xl font-bold font-orbitron">X</div>
+            <div>
+                <h1 class="font-orbitron text-2xl font-bold text-cyan-400">XAVIER OS</h1>
+                <p class="text-gray-500 text-sm">Quantum Ecosystem</p>
             </div>
         </div>
+        <button onclick="window.location.href='settings.html'" class="panel px-4 py-2 rounded-lg text-sm">Settings</button>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            
-            <div class="quantum-panel rounded-2xl p-6 relative cursor-pointer" onclick="goToHoloworld()">
-                <span class="tier-badge tier-pro">Pro</span>
-                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-3xl mb-4">
-                    🌐
-                </div>
-                <h3 class="font-orbitron text-xl font-bold text-cyan-400 mb-2">HOLOVERSE</h3>
-                <p class="text-gray-400 text-sm mb-3">3D Quantum Environment. WebGL powered.</p>
-                <div class="flex gap-2 text-xs text-cyan-500/70">
-                    <span>Real-time</span>
-                    <span>•</span>
-                    <span>3D</span>
-                </div>
-            </div>
-            
-            <div class="quantum-panel rounded-2xl p-6 relative cursor-pointer" onclick="alert('Module active')">
-                <span class="tier-badge tier-free">Free</span>
-                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-400 to-pink-600 flex items-center justify-center text-3xl mb-4">
-                    🚀
-                </div>
-                <h3 class="font-orbitron text-xl font-bold text-purple-400 mb-2">DROPSHIP</h3>
-                <p class="text-gray-400 text-sm mb-3">Product catalog and inventory.</p>
-            </div>
-            
-            <div class="quantum-panel rounded-2xl p-6 relative cursor-pointer" onclick="checkAccess('analytics')">
-                <span class="tier-badge tier-pro">Pro</span>
-                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center text-3xl mb-4">
-                    📊
-                </div>
-                <h3 class="font-orbitron text-xl font-bold text-green-400 mb-2">ANALYTICS</h3>
-                <p class="text-gray-400 text-sm mb-3">Revenue and user metrics.</p>
-            </div>
-            
-            <div class="quantum-panel rounded-2xl p-6 relative cursor-pointer" onclick="alert('Module active')">
-                <span class="tier-badge tier-free">Free</span>
-                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-600 flex items-center justify-center text-3xl mb-4">
-                    📢
-                </div>
-                <h3 class="font-orbitron text-xl font-bold text-yellow-400 mb-2">MARKETING</h3>
-                <p class="text-gray-400 text-sm mb-3">Campaigns and social tools.</p>
-            </div>
-            
-            <div class="quantum-panel rounded-2xl p-6 relative cursor-pointer" onclick="window.location.href='pricing.html'">
-                <span class="tier-badge tier-free">Free</span>
-                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-3xl mb-4">
-                    💎
-                </div>
-                <h3 class="font-orbitron text-xl font-bold text-blue-400 mb-2">UPGRADE</h3>
-                <p class="text-gray-400 text-sm mb-3">View plans and subscribe.</p>
-            </div>
-            
-            <div class="quantum-panel rounded-2xl p-6 relative border-red-500/30 cursor-pointer" onclick="goToAdmin()">
-                <span class="tier-badge tier-admin">Restricted</span>
-                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-3xl mb-4">
-                    ⚡
-                </div>
-                <h3 class="font-orbitron text-xl font-bold text-red-400 mb-2">SYSTEM</h3>
-                <p class="text-gray-400 text-sm mb-3">Control center and operations.</p>
-            </div>
-            
+        <div class="panel rounded-2xl p-6 relative cursor-pointer" onclick="goTo('holoworld')">
+            <span class="badge pro">PRO</span>
+            <div class="text-3xl mb-3">🌐</div>
+            <h3 class="font-orbitron text-lg font-bold text-cyan-400">HOLOVERSE</h3>
+            <p class="text-gray-400 text-sm mt-2">3D Environment</p>
         </div>
-        
-        <footer class="mt-12 text-center text-gray-600 text-sm">
-            <p>Xavier OS Quantum Ecosystem</p>
-        </footer>
+
+        <div class="panel rounded-2xl p-6 relative cursor-pointer" onclick="alert('Active')">
+            <span class="badge free">FREE</span>
+            <div class="text-3xl mb-3">🚀</div>
+            <h3 class="font-orbitron text-lg font-bold text-purple-400">DROPSHIP</h3>
+            <p class="text-gray-400 text-sm mt-2">Commerce</p>
+        </div>
+
+        <div class="panel rounded-2xl p-6 relative cursor-pointer" onclick="goTo('admin')">
+            <span class="badge restricted">RESTRICTED</span>
+            <div class="text-3xl mb-3">⚡</div>
+            <h3 class="font-orbitron text-lg font-bold text-red-400">SYSTEM</h3>
+            <p class="text-gray-400 text-sm mt-2">Control Center</p>
+        </div>
+
     </div>
-    
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            updateTierDisplay();
-            checkAdminStatus();
-        });
-        
-        function updateTierDisplay() {
-            const tier = XavierUnlock.getTier();
-            const display = document.getElementById('tier-display');
-            display.textContent = tier.charAt(0).toUpperCase() + tier.slice(1);
-            
-            if (tier === 'architect') {
-                display.className = 'font-bold text-red-400 ml-2';
-            } else if (tier === 'pro') {
-                display.className = 'font-bold text-purple-400 ml-2';
+        function goTo(page) {
+            if (page === 'holoworld') {
+                if (XavierUnlock.hasAccess('holoworld')) {
+                    window.location.href = 'holoworld.html';
+                } else {
+                    alert('Pro tier required');
+                }
+            } else if (page === 'admin') {
+                if (XavierUnlock.isAdmin()) {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'admin-unlock.html';
+                }
             }
         }
-        
-        function checkAdminStatus() {
-            if (XavierUnlock.isAdmin()) {
-                document.getElementById('admin-btn').classList.remove('hidden');
-            }
-        }
-        
-        function goToHoloworld() {
-            if (XavierUnlock.hasAccess('holoworld')) {
-                window.location.href = 'holoworld.html';
-            } else {
-                alert('🔒 Requires Pro tier');
-                window.location.href = 'pricing.html';
-            }
-        }
-        
-        function goToAdmin() {
-            if (XavierUnlock.isAdmin()) {
-                window.location.href = 'admin.html';
-            } else {
-                window.location.href = 'admin-unlock.html';
-            }
-        }
-        
-        function checkAccess(feature) {
-            if (XavierUnlock.hasAccess(feature)) {
-                alert(feature + ' module loading...');
-            } else {
-                alert('🔒 Pro tier required');
-                window.location.href = 'pricing.html';
-            }
-        }
-        
-        let tapCount = 0;
-        document.getElementById('logo').addEventListener('click', () => {
-            tapCount++;
-            if (tapCount === 5) {
-                window.location.href = 'admin-unlock.html';
-            }
-            setTimeout(() => tapCount = 0, 800);
-        });
     </script>
+
 </body>
 </html>
