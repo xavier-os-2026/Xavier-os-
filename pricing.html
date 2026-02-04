@@ -1,161 +1,235 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#000000">
-    <title>Pricing | Xavier OS</title>
+    <title>Settings | Xavier OS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="guard.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <script src="admin-fix.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Rajdhani', sans-serif; background: #020204; color: #e0e0e0; }
-        .quantum-panel { background: rgba(10, 14, 39, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
-        .popular { border: 2px solid #00f0ff; position: relative; }
-        .popular::before { content: 'MOST POPULAR'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #00f0ff; color: black; padding: 4px 20px; font-size: 12px; font-weight: bold; border-radius: 20px; }
-        .secret-zone { 
-            position: fixed; 
-            bottom: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 20px; 
-            opacity: 0; 
-            z-index: 9999;
+        body { 
+            background: #020204; 
+            color: #e0e0e0; 
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
+        }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        
+        .quantum-panel {
+            background: rgba(10, 14, 39, 0.8);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            backdrop-filter: blur(20px);
+        }
+        
+        .setting-row {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 1rem 0;
+        }
+        .setting-row:last-child { border-bottom: none; }
+        
+        .toggle {
+            width: 50px;
+            height: 26px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .toggle.active {
+            background: #00f0ff;
+        }
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+        .toggle.active::after {
+            left: 26px;
+        }
+        
+        .danger-btn {
+            background: rgba(255,0,64,0.1);
+            border: 1px solid rgba(255,0,64,0.3);
+            color: #ff0040;
+            transition: all 0.3s;
+        }
+        .danger-btn:hover {
+            background: rgba(255,0,64,0.2);
         }
     </style>
 </head>
-<body class="min-h-screen">
+<body>
+    <div class="min-h-screen p-4 md:p-8">
+        <header class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-4">
+                <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white text-2xl">←</button>
+                <h1 class="font-orbitron text-3xl font-bold text-cyan-400">SETTINGS</h1>
+            </div>
+        </header>
 
-    <header class="quantum-panel sticky top-0 z-50 px-6 py-4 border-b border-gray-800">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white">← Back to Hub</button>
-            <h1 class="font-orbitron text-2xl font-bold text-white">ACCESS LEVELS</h1>
-        </div>
-    </header>
-
-    <main class="max-w-7xl mx-auto px-6 py-12">
-        <div class="grid lg:grid-cols-4 gap-6 mb-12">
+        <div class="max-w-2xl mx-auto space-y-6">
             
             <div class="quantum-panel rounded-2xl p-6">
-                <h3 class="font-orbitron text-xl font-bold text-gray-400">EXPLORER</h3>
-                <div class="text-3xl font-bold mt-2">$0</div>
-                <ul class="mt-4 space-y-2 text-sm text-gray-400">
-                    <li>• Basic Holoverse Access</li>
-                    <li>• Social Only</li>
-                    <li>• 10 AI ops/mo</li>
-                    <li>• 1GB Storage</li>
-                </ul>
-                <button onclick="selectTier('free')" class="mt-6 w-full py-2 border border-gray-600 rounded hover:border-cyan-400 transition">Select</button>
+                <h2 class="font-orbitron text-lg text-cyan-400 mb-4">Account</h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Access Tier</span>
+                        <span class="font-bold text-cyan-400" id="tier-display">Free</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">System Status</span>
+                        <span class="font-bold text-red-400" id="admin-status">No</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Session ID</span>
+                        <span class="font-mono text-xs text-gray-600" id="session-id">---</span>
+                    </div>
+                </div>
+                <button onclick="window.location.href='pricing.html'" class="w-full mt-4 py-2 bg-cyan-500/20 border border-cyan-500/50 text-cyan-400 rounded-lg hover:bg-cyan-500/30 transition">
+                    Manage Subscription
+                </button>
             </div>
 
             <div class="quantum-panel rounded-2xl p-6">
-                <h3 class="font-orbitron text-xl font-bold text-purple-400">CREATOR</h3>
-                <div class="text-3xl font-bold mt-2">$49<span class="text-sm">/mo</span></div>
-                <ul class="mt-4 space-y-2 text-sm text-gray-400">
-                    <li>• Full Holoverse</li>
-                    <li>• Shop Ownership</li>
-                    <li>• Property Buying</li>
-                    <li>• Jobs & Missions</li>
-                    <li>• 100 AI ops/mo</li>
-                </ul>
-                <button onclick="selectTier('pro')" class="mt-6 w-full bg-purple-600 py-2 rounded hover:bg-purple-500 transition">Select</button>
-            </div>
-
-            <div class="quantum-panel rounded-2xl p-6 popular bg-gradient-to-b from-cyan-900/20 to-blue-900/20">
-                <h3 class="font-orbitron text-xl font-bold text-cyan-400">AUTONOMOUS</h3>
-                <div class="text-3xl font-bold mt-2">$199<span class="text-sm">/mo</span></div>
-                <ul class="mt-4 space-y-2 text-gray-300">
-                    <li>• Everything in Creator</li>
-                    <li>• Premium Shop Locations</li>
-                    <li>• High-Ticket Missions</li>
-                    <li>• Vehicle Ownership</li>
-                    <li>• Unlimited AI</li>
-                    <li>• Revenue Share Access</li>
-                </ul>
-                <button onclick="selectTier('pro')" class="mt-6 w-full bg-cyan-600 py-2 rounded font-bold text-black hover:bg-cyan-500 transition">Select</button>
-            </div>
-
-            <div class="quantum-panel rounded-2xl p-6 border-yellow-500/30">
-                <h3 class="font-orbitron text-xl font-bold text-yellow-400">ARCHITECT</h3>
-                <div class="text-3xl font-bold mt-2">$999<span class="text-sm">/mo</span></div>
-                <ul class="mt-4 space-y-2 text-gray-400">
-                    <li>• Platform Ownership</li>
-                    <li>• 20% Revenue Share</li>
-                    <li>• Admin Dashboard</li>
-                    <li>• User Analytics</li>
-                    <li>• Custom Branding</li>
-                    <li>• White Label Rights</li>
-                </ul>
-                <button onclick="selectTier('architect')" class="mt-6 w-full bg-yellow-600 py-2 rounded font-bold text-black hover:bg-yellow-500 transition">Contact</button>
-            </div>
-        </div>
-
-        <!-- Hidden Secret Access Area (Bottom of screen) -->
-        <div id="secret-access" class="secret-zone" onclick="activateSecret()"></div>
-        
-        <div class="quantum-panel rounded-2xl p-8 border border-gray-800 bg-gray-900/20">
-            <div class="flex items-center gap-4">
-                <div class="text-4xl">🔐</div>
-                <div>
-                    <h3 class="font-orbitron text-lg font-bold text-gray-400">Enterprise Access</h3>
-                    <p class="text-gray-600 text-sm mt-1">Contact sales for custom enterprise solutions and white-label licensing.</p>
+                <h2 class="font-orbitron text-lg text-purple-400 mb-4">Preferences</h2>
+                <div class="setting-row flex justify-between items-center">
+                    <div>
+                        <p class="font-bold">Animations</p>
+                        <p class="text-xs text-gray-500">Enable UI animations</p>
+                    </div>
+                    <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+                </div>
+                <div class="setting-row flex justify-between items-center">
+                    <div>
+                        <p class="font-bold">High Performance</p>
+                        <p class="text-xs text-gray-500">Max quality (uses more battery)</p>
+                    </div>
+                    <div class="toggle" onclick="this.classList.toggle('active'); localStorage.setItem('high_perf', this.classList.contains('active'))"></div>
                 </div>
             </div>
+
+            <div class="quantum-panel rounded-2xl p-6">
+                <h2 class="font-orbitron text-lg text-yellow-400 mb-4">Data</h2>
+                <div class="space-y-3">
+                    <button onclick="exportData()" class="w-full py-2 bg-gray-800 rounded-lg text-sm hover:bg-gray-700 transition">
+                        Export Local Data
+                    </button>
+                    <button onclick="importData()" class="w-full py-2 bg-gray-800 rounded-lg text-sm hover:bg-gray-700 transition">
+                        Import Local Data
+                    </button>
+                    <button onclick="clearCache()" class="w-full py-2 bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 rounded-lg text-sm hover:bg-yellow-500/30 transition">
+                        Clear Cache
+                    </button>
+                </div>
+            </div>
+
+            <div id="admin-tools" class="quantum-panel rounded-2xl p-6 border-red-500/30 hidden">
+                <h2 class="font-orbitron text-lg text-red-400 mb-4">System Tools</h2>
+                <div class="space-y-3">
+                    <button onclick="window.location.href='admin.html'" class="w-full py-2 bg-red-500/20 border border-red-500/50 text-red-400 rounded-lg hover:bg-red-500/30 transition">
+                        Open Control Panel
+                    </button>
+                    <button onclick="XavierUnlock.forceUnlock(); alert('System owner verified')" class="w-full py-2 bg-gray-800 rounded-lg text-sm text-gray-400 hover:bg-gray-700 transition">
+                        Force Verify Access
+                    </button>
+                </div>
+            </div>
+
+            <div class="quantum-panel rounded-2xl p-6 border-red-500/20">
+                <h2 class="font-orbitron text-lg text-red-400 mb-4">Danger Zone</h2>
+                <div class="space-y-3">
+                    <button onclick="logout()" class="danger-btn w-full py-2 rounded-lg font-bold">
+                        Logout
+                    </button>
+                    <button onclick="deleteAllData()" class="danger-btn w-full py-2 rounded-lg font-bold border-red-600">
+                        Delete All Data
+                    </button>
+                </div>
+            </div>
+
         </div>
-    </main>
+    </div>
 
     <script>
-        function selectTier(tier) {
-            if (tier === 'architect') {
-                alert('Contacting Xavier sales team...\n\nFor enterprise inquiries:\nEmail: enterprise@xavier-os.com');
-                return;
+        document.addEventListener('DOMContentLoaded', () => {
+            const tier = XavierUnlock.getTier();
+            document.getElementById('tier-display').textContent = tier.charAt(0).toUpperCase() + tier.slice(1);
+            
+            if (XavierUnlock.isAdmin()) {
+                document.getElementById('admin-status').textContent = 'Yes';
+                document.getElementById('admin-status').className = 'font-bold text-green-400';
+                document.getElementById('admin-tools').classList.remove('hidden');
             }
             
-            localStorage.setItem('selected_tier', tier);
-            window.location.href = 'auth.html';
-        }
-        
-        // Secret activation (invisible tap zone at bottom)
-        let tapCount = 0;
-        function activateSecret() {
-            tapCount++;
-            if (tapCount >= 5) {
-                const code = prompt('Enter emergency sequence:');
-                if (code && code === atob('YXJjaGl0ZWN0X3hfMjAyNQ==')) {
-                    localStorage.setItem('xavier_quantum_session', JSON.stringify({
-                        tier: 'architect',
-                        timestamp: Date.now(),
-                        secret: true
-                    }));
-                    window.location.href = 'admin.html';
-                } else if (code) {
-                    alert('Invalid sequence');
-                }
-                tapCount = 0;
-            }
-        }
-        
-        // Alternative: Konami code style
-        let keySequence = [];
-        const secretCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
-        
-        document.addEventListener('keydown', (e) => {
-            keySequence.push(e.key);
-            keySequence = keySequence.slice(-10);
-            
-            if (keySequence.join(',') === secretCode.join(',')) {
-                const code = prompt('Emergency access sequence detected.\nEnter validation code:');
-                if (code === atob('YXJjaGl0ZWN0X3hfMjAyNQ==')) {
-                    localStorage.setItem('xavier_quantum_session', JSON.stringify({
-                        tier: 'architect',
-                        timestamp: Date.now(),
-                        konami: true
-                    }));
-                    window.location.href = 'admin.html';
-                }
-            }
+            document.getElementById('session-id').textContent = 'XAV-' + Math.random().toString(36).substr(2, 9).toUpperCase();
         });
+
+        function logout() {
+            if (confirm('Logout? You will need to re-authenticate.')) {
+                XavierUnlock.logout();
+            }
+        }
+
+        function deleteAllData() {
+            if (confirm('🚨 DELETE ALL DATA?\\n\\nThis cannot be undone!')) {
+                if (confirm('Are you absolutely sure?')) {
+                    localStorage.clear();
+                    alert('All data deleted. Reloading...');
+                    window.location.href = 'index.html';
+                }
+            }
+        }
+
+        function exportData() {
+            const data = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                data[key] = localStorage.getItem(key);
+            }
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'xavier-backup.json';
+            a.click();
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        Object.keys(data).forEach(key => {
+                            localStorage.setItem(key, data[key]);
+                        });
+                        alert('Data imported! Reloading...');
+                        location.reload();
+                    } catch (err) {
+                        alert('Invalid file format');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function clearCache() {
+            localStorage.removeItem('xavier_quantum_session');
+            alert('Cache cleared');
+        }
     </script>
 </body>
 </html>

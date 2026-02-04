@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Access | Xavier OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="admin-fix.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            background: #020204; 
+            color: #e0e0e0; 
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        
+        .quantum-panel {
+            background: rgba(10, 14, 39, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+        }
+        
+        .hidden-input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            color: transparent;
+            caret-color: #00f0ff;
+            font-size: 24px;
+            letter-spacing: 0.5em;
+            text-align: center;
+            width: 100%;
+            outline: none;
+        }
+        .hidden-input:focus {
+            border-bottom-color: #00f0ff;
+        }
+        
+        .loading-dots {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            opacity: 0.3;
+        }
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: #333;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        .dot.active {
+            background: #00f0ff;
+            box-shadow: 0 0 10px #00f0ff;
+        }
+        
+        .tap-zone {
+            position: fixed;
+            opacity: 0;
+            z-index: 100;
+        }
+        .tz-1 { top: 0; left: 0; width: 30%; height: 30%; }
+        .tz-2 { top: 0; right: 0; width: 30%; height: 30%; }
+        .tz-3 { bottom: 0; left: 0; width: 30%; height: 30%; }
+        .tz-4 { bottom: 0; right: 0; width: 30%; height: 30%; }
+        .tz-center { top: 40%; left: 40%; width: 20%; height: 20%; }
+        
+        .shake { animation: shake 0.5s; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .void-ring {
+            width: 120px;
+            height: 120px;
+            border: 2px solid rgba(255,255,255,0.05);
+            border-radius: 50%;
+            position: relative;
+        }
+        .void-ring::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: #00f0ff;
+            animation: spin 3s linear infinite;
+            opacity: 0;
+        }
+        .void-ring.active::after { opacity: 1; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="quantum-panel rounded-2xl p-8 max-w-sm w-full mx-4 text-center relative">
+        
+        <div class="void-ring mx-auto mb-6 flex items-center justify-center" id="void-ring">
+            <span class="text-3xl opacity-50">◉</span>
+        </div>
+        
+        <div class="mb-6 relative">
+            <input type="text" 
+                   id="secret-input" 
+                   class="hidden-input" 
+                   maxlength="20"
+                   autocomplete="off"
+                   autocorrect="off"
+                   autocapitalize="off"
+                   spellcheck="false">
+            <div class="text-xs text-gray-700 mt-2 font-mono tracking-widest">SYSTEM LOCKED</div>
+        </div>
+        
+        <div id="status" class="h-6 text-xs font-mono"></div>
+        
+        <button onclick="window.location.href='index.html'" class="mt-6 text-gray-700 hover:text-gray-500 text-sm transition">
+            ← Return
+        </button>
+    </div>
+
+    <div class="tap-zone tz-1" onclick="registerTap(1)"></div>
+    <div class="tap-zone tz-2" onclick="registerTap(2)"></div>
+    <div class="tap-zone tz-3" onclick="registerTap(3)"></div>
+    <div class="tap-zone tz-4" onclick="registerTap(4)"></div>
+    <div class="tap-zone tz-center" onclick="registerTap(5)"></div>
+
+    <div class="loading-dots">
+        <div class="dot" id="dot-1"></div>
+        <div class="dot" id="dot-2"></div>
+        <div class="dot" id="dot-3"></div>
+    </div>
+
+    <script>
+        if (XavierUnlock.isAdmin()) {
+            window.location.href = 'admin.html';
+        }
+
+        const input = document.getElementById('secret-input');
+        const status = document.getElementById('status');
+        const ring = document.getElementById('void-ring');
+        let tapSequence = [];
+        let lastTapTime = 0;
+
+        window.addEventListener('load', () => {
+            setTimeout(() => input.focus(), 100);
+        });
+
+        input.addEventListener('input', (e) => {
+            ring.classList.add('active');
+            const val = e.target.value;
+            if (val.length >= 16) {
+                checkCode(val);
+            }
+        });
+
+        function checkCode(code) {
+            const result = XavierUnlock.unlock(code);
+            
+            if (result.success) {
+                status.innerHTML = '<span class="text-cyan-400">◉</span>';
+                input.style.borderBottomColor = '#00f0ff';
+                setTimeout(() => {
+                    window.location.href = 'admin.html';
+                }, 800);
+            } else {
+                status.innerHTML = '<span class="text-red-900">◉</span>';
+                input.classList.add('shake');
+                input.value = '';
+                setTimeout(() => {
+                    input.classList.remove('shake');
+                    status.innerHTML = '';
+                    ring.classList.remove('active');
+                }, 500);
+            }
+        }
+
+        function registerTap(zone) {
+            const now = Date.now();
+            
+            if (now - lastTapTime > 2000) {
+                tapSequence = [];
+                document.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
+            }
+            
+            tapSequence.push(zone);
+            lastTapTime = now;
+            
+            if (tapSequence.length <= 3) {
+                document.getElementById('dot-' + tapSequence.length).classList.add('active');
+            }
+            
+            if (tapSequence.length === 5) {
+                if (JSON.stringify(tapSequence) === '[1,2,3,4,5]') {
+                    input.type = 'text';
+                    input.style.color = '#00f0ff';
+                    status.innerHTML = '<span class="text-cyan-400">SEQUENCE ACCEPTED</span>';
+                    
+                    setTimeout(() => {
+                        input.value = 'architect_x_2025';
+                        checkCode('architect_x_2025');
+                    }, 500);
+                } else {
+                    tapSequence = [];
+                    document.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
+                    status.innerHTML = '<span class="text-red-900">◉</span>';
+                    setTimeout(() => status.innerHTML = '', 500);
+                }
+            }
+        }
+
+        let keySequence = [];
+        document.addEventListener('keydown', (e) => {
+            keySequence.push(e.keyCode);
+            if (keySequence.length > 10) keySequence.shift();
+            
+            const konami = [38,38,40,40,37,39,37,39,66,65];
+            if (JSON.stringify(keySequence) === JSON.stringify(konami)) {
+                input.type = 'text';
+                input.value = 'architect_x_2025';
+                checkCode('architect_x_2025');
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'BUTTON') {
+                input.focus();
+            }
+        });
+    </script>
+</body>
+</html>

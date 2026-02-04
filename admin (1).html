@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Control | Xavier OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="admin-fix.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            background: #020204; 
+            color: #e0e0e0; 
+            font-family: 'Rajdhani', sans-serif;
+            min-height: 100vh;
+        }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        
+        .quantum-panel {
+            background: rgba(10, 14, 39, 0.8);
+            border: 1px solid rgba(255, 0, 64, 0.3);
+            backdrop-filter: blur(20px);
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, rgba(255,0,64,0.1), rgba(176,38,255,0.1));
+            border: 1px solid rgba(255,0,64,0.2);
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen p-4 md:p-8">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div class="flex items-center gap-4">
+                <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white text-2xl">←</button>
+                <div>
+                    <h1 class="font-orbitron text-3xl font-bold text-red-400">SYSTEM CONTROL</h1>
+                    <p class="text-gray-500 text-sm">Owner Dashboard</p>
+                </div>
+            </div>
+            <button onclick="XavierUnlock.logout()" class="quantum-panel px-6 py-2 rounded-lg text-red-400 border border-red-500/50 hover:bg-red-500/20 transition">
+                Logout
+            </button>
+        </header>
+
+        <div id="auth-screen" class="hidden min-h-[60vh] flex items-center justify-center">
+            <div class="quantum-panel rounded-2xl p-8 max-w-md w-full text-center">
+                <div class="text-4xl mb-4">⚡</div>
+                <h2 class="font-orbitron text-xl text-red-400 mb-4">Access Required</h2>
+                <p class="text-gray-400 mb-6">System owner privileges required.</p>
+                <button onclick="window.location.href='admin-unlock.html'" class="w-full bg-red-600 hover:bg-red-500 py-3 rounded-lg font-bold transition">
+                    Authenticate
+                </button>
+            </div>
+        </div>
+
+        <div id="admin-panel" class="hidden space-y-6">
+            
+            <div class="data-grid">
+                <div class="metric-card rounded-xl p-6">
+                    <p class="text-gray-400 text-sm mb-1">Total Revenue</p>
+                    <p class="font-orbitron text-2xl text-green-400">$<span id="revenue">0.00</span></p>
+                </div>
+                <div class="metric-card rounded-xl p-6">
+                    <p class="text-gray-400 text-sm mb-1">Active Users</p>
+                    <p class="font-orbitron text-2xl text-cyan-400" id="users">0</p>
+                </div>
+                <div class="metric-card rounded-xl p-6">
+                    <p class="text-gray-400 text-sm mb-1">Pro Subscriptions</p>
+                    <p class="font-orbitron text-2xl text-purple-400" id="pro-subs">0</p>
+                </div>
+                <div class="metric-card rounded-xl p-6">
+                    <p class="text-gray-400 text-sm mb-1">System Status</p>
+                    <p class="font-orbitron text-2xl text-green-400 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                        Online
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="quantum-panel rounded-xl p-6">
+                    <h3 class="font-orbitron text-lg text-cyan-400 mb-4">User Management</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 bg-black/30 rounded">
+                            <span class="text-sm">Total Signups</span>
+                            <span class="font-bold text-cyan-400" id="total-signups">0</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-black/30 rounded">
+                            <span class="text-sm">Free Tier</span>
+                            <span class="font-bold text-gray-400" id="free-tier">0</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-black/30 rounded">
+                            <span class="text-sm">Pro Tier</span>
+                            <span class="font-bold text-purple-400" id="pro-tier">0</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-black/30 rounded border border-red-500/30">
+                            <span class="text-sm">System Owner</span>
+                            <span class="font-bold text-red-400" id="owner-tier">1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quantum-panel rounded-xl p-6">
+                    <h3 class="font-orbitron text-lg text-green-400 mb-4">Revenue Streams</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 bg-black/30 rounded">
+                            <span class="text-sm">Subscriptions</span>
+                            <span class="font-bold text-green-400">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-black/30 rounded">
+                            <span class="text-sm">One-time Purchases</span>
+                            <span class="font-bold text-green-400">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-black/30 rounded">
+                            <span class="text-sm">Affiliate</span>
+                            <span class="font-bold text-green-400">$0.00</span>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-800">
+                            <button onclick="alert('Connect Stripe to see real data')" class="w-full bg-green-600/20 border border-green-500/50 text-green-400 py-2 rounded text-sm hover:bg-green-600/30 transition">
+                                Connect Payment Processor
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quantum-panel rounded-xl p-6">
+                <h3 class="font-orbitron text-lg text-purple-400 mb-4">Quick Actions</h3>
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="XavierUnlock.forceUnlock(); alert('System owner verified')" class="px-4 py-2 bg-red-500/20 border border-red-500/50 text-red-400 rounded hover:bg-red-500/30 transition text-sm">
+                        Force Verify
+                    </button>
+                    <button onclick="localStorage.clear(); alert('All data cleared'); location.reload()" class="px-4 py-2 bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 rounded hover:bg-yellow-500/30 transition text-sm">
+                        Clear All Data
+                    </button>
+                    <button onclick="window.open('holoworld.html')" class="px-4 py-2 bg-cyan-500/20 border border-cyan-500/50 text-cyan-400 rounded hover:bg-cyan-500/30 transition text-sm">
+                        Launch HoloWorld
+                    </button>
+                </div>
+            </div>
+
+            <div class="quantum-panel rounded-xl p-6">
+                <h3 class="font-orbitron text-lg text-gray-400 mb-4">System Log</h3>
+                <div class="bg-black/50 rounded-lg p-4 font-mono text-xs text-gray-500 h-40 overflow-y-auto" id="system-log">
+                    <div class="text-green-400">[SYSTEM] Control panel loaded</div>
+                    <div class="text-cyan-400">[AUTH] Owner access verified</div>
+                    <div class="text-gray-600">[DATA] Metrics loaded</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!XavierUnlock.isAdmin()) {
+                document.getElementById('auth-screen').classList.remove('hidden');
+                document.getElementById('admin-panel').classList.add('hidden');
+            } else {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('admin-panel').classList.remove('hidden');
+                loadDashboardData();
+            }
+        });
+        
+        function loadDashboardData() {
+            const data = {
+                revenue: (Math.random() * 10000).toFixed(2),
+                users: Math.floor(Math.random() * 500) + 50,
+                proSubs: Math.floor(Math.random() * 50),
+                signups: Math.floor(Math.random() * 1000)
+            };
+            
+            document.getElementById('revenue').textContent = data.revenue;
+            document.getElementById('users').textContent = data.users;
+            document.getElementById('pro-subs').textContent = data.proSubs;
+            document.getElementById('total-signups').textContent = data.signups;
+            document.getElementById('free-tier').textContent = data.signups - data.proSubs;
+            document.getElementById('pro-tier').textContent = data.proSubs;
+            
+            const log = document.getElementById('system-log');
+            log.innerHTML += '<div class="text-gray-600">[DATA] Dashboard refreshed: ' + new Date().toLocaleTimeString() + '</div>';
+        }
+        
+        setInterval(() => {
+            if (XavierUnlock.isAdmin()) {
+                loadDashboardData();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
