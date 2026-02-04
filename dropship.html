@@ -3,21 +3,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
     <title>Quantum Commerce | Xavier OS</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="guard.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root { --void-black: #020204; }
         body { font-family: 'Rajdhani', sans-serif; background: var(--void-black); color: #e0e0e0; }
         .quantum-panel { background: rgba(10, 14, 39, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
-        .product-card { transition: all 0.3s ease; }
-        .product-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0, 255, 136, 0.1); }
-        .auto-importing { animation: importing 2s infinite; }
-        @keyframes importing { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        .profit-pulse { animation: profitPulse 2s infinite; }
-        @keyframes profitPulse { 0%, 100% { color: #00ff88; } 50% { color: #00ffff; } }
+        .revenue-pill { background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); }
     </style>
 </head>
 <body class="min-h-screen">
@@ -29,14 +26,10 @@
                 <h1 class="font-orbitron text-2xl font-bold text-green-400">QUANTUM COMMERCE</h1>
             </div>
             <div class="flex items-center gap-4">
-                <div class="hidden md:flex items-center gap-3 text-sm">
-                    <span class="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full text-green-400 text-xs">AI Auto-Pilot: ON</span>
-                    <span class="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-400 text-xs">Margin Optimizer: Active</span>
+                <div class="revenue-pill px-3 py-1 rounded-full text-xs text-green-400">
+                    Platform Fee: 4%
                 </div>
-                <button onclick="toggleAutoImport()" id="auto-btn" class="bg-green-600 hover:bg-green-500 text-black px-4 py-2 rounded-lg font-bold text-sm transition flex items-center gap-2">
-                    <span class="w-2 h-2 bg-black rounded-full animate-pulse"></span>
-                    Auto-Import: OFF
-                </button>
+                <button onclick="XavierSecurity.logout()" class="text-red-400 text-sm">Logout</button>
             </div>
         </div>
     </header>
@@ -48,22 +41,18 @@
             <div class="quantum-panel rounded-2xl p-5 border border-green-500/20">
                 <div class="text-xs text-gray-400 mb-1">Auto-Imported Today</div>
                 <div class="text-3xl font-bold text-green-400 font-orbitron" id="stat-imported">0</div>
-                <div class="text-xs text-green-500/70 mt-1">↑ 24% vs yesterday</div>
             </div>
             <div class="quantum-panel rounded-2xl p-5">
                 <div class="text-xs text-gray-400 mb-1">Avg Margin</div>
                 <div class="text-3xl font-bold text-cyan-400 font-orbitron" id="stat-margin">0%</div>
-                <div class="text-xs text-cyan-500/70 mt-1">AI optimized</div>
             </div>
             <div class="quantum-panel rounded-2xl p-5">
                 <div class="text-xs text-gray-400 mb-1">Live Inventory</div>
                 <div class="text-3xl font-bold text-purple-400 font-orbitron" id="stat-inventory">0</div>
-                <div class="text-xs text-purple-500/70 mt-1">Zero-API sync</div>
             </div>
             <div class="quantum-panel rounded-2xl p-5 border border-yellow-500/20">
-                <div class="text-xs text-gray-400 mb-1">Projected Profit</div>
-                <div class="text-3xl font-bold text-yellow-400 font-orbitron profit-pulse" id="stat-profit">$0</div>
-                <div class="text-xs text-yellow-500/70 mt-1">30-day forecast</div>
+                <div class="text-xs text-gray-400 mb-1">Platform Fees Paid</div>
+                <div class="text-3xl font-bold text-yellow-400 font-orbitron" id="stat-fees">$0</div>
             </div>
         </div>
 
@@ -73,54 +62,19 @@
             <div class="space-y-6">
                 <div class="quantum-panel rounded-2xl p-6 border border-green-500/30">
                     <h3 class="font-orbitron text-lg font-bold text-green-400 mb-4">AI Product Curator</h3>
-                    <p class="text-xs text-gray-500 mb-4">Zero-API technology: AI scrapes trending products from major suppliers without needing API keys</p>
+                    <p class="text-xs text-gray-500 mb-4">4% platform fee auto-deducted on all sales</p>
                     
                     <div class="space-y-3 mb-4">
                         <select id="niche-select" class="w-full bg-black/50 border border-green-500/30 rounded-lg p-3 text-white text-sm">
                             <option value="tech">Tech & Gadgets</option>
                             <option value="fashion">Fashion & Apparel</option>
                             <option value="home">Home & Garden</option>
-                            <option value="beauty">Beauty & Health</option>
-                            <option value="pets">Pet Supplies</option>
-                        </select>
-                        
-                        <select id="price-range" class="w-full bg-black/50 border border-green-500/30 rounded-lg p-3 text-white text-sm">
-                            <option value="all">All Price Ranges</option>
-                            <option value="low">$0 - $50 (High Volume)</option>
-                            <option value="mid">$50 - $200 (Mid Tier)</option>
-                            <option value="high">$200+ (High Ticket)</option>
                         </select>
                     </div>
 
                     <button onclick="aiImportProducts()" class="w-full bg-gradient-to-r from-green-600 to-cyan-600 py-3 rounded-lg font-bold text-sm mb-3 hover:shadow-lg hover:shadow-green-500/20 transition">
                         🤖 AI Import Products
                     </button>
-                    
-                    <div class="text-xs text-gray-600 text-center">No API keys required • Auto-margin calculation</div>
-                </div>
-
-                <div class="quantum-panel rounded-2xl p-6">
-                    <h3 class="font-orbitron text-lg font-bold text-cyan-400 mb-4">Price Optimizer</h3>
-                    <div class="space-y-3 text-sm">
-                        <div class="flex justify-between items-center p-3 bg-black/30 rounded-lg">
-                            <span class="text-gray-400">Dynamic Pricing</span>
-                            <button onclick="toggleFeature(this)" class="w-12 h-6 bg-green-500 rounded-full relative transition">
-                                <span class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></span>
-                            </button>
-                        </div>
-                        <div class="flex justify-between items-center p-3 bg-black/30 rounded-lg">
-                            <span class="text-gray-400">Competitor Tracking</span>
-                            <button onclick="toggleFeature(this)" class="w-12 h-6 bg-green-500 rounded-full relative transition">
-                                <span class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></span>
-                            </button>
-                        </div>
-                        <div class="flex justify-between items-center p-3 bg-black/30 rounded-lg">
-                            <span class="text-gray-400">Auto-Reorder</span>
-                            <button onclick="toggleFeature(this)" class="w-12 h-6 bg-gray-600 rounded-full relative transition">
-                                <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></span>
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -129,12 +83,9 @@
                 <div class="quantum-panel rounded-2xl p-6 mb-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-orbitron text-xl font-bold text-white">Curated Inventory</h3>
-                        <div class="flex gap-2">
-                            <input type="text" id="search-products" placeholder="Search AI-curated products..." 
-                                class="bg-black/50 border border-gray-700 rounded-lg px-4 py-2 text-sm text-white w-64 focus:border-green-500 focus:outline-none"
-                                onkeyup="searchProducts()">
-                            <button onclick="exportCatalog()" class="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm transition">Export</button>
-                        </div>
+                        <input type="text" id="search-products" placeholder="Search..." 
+                            class="bg-black/50 border border-gray-700 rounded-lg px-4 py-2 text-sm text-white w-48"
+                            onkeyup="searchProducts()">
                     </div>
 
                     <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -146,24 +97,20 @@
     </main>
 
     <script>
-        // Zero-API Product Database (Simulated AI scraping)
         const AI_PRODUCTS = [
-            {id: 1, name: 'Neural Interface Headset', category: 'tech', cost: 45, price: 149, supplier: 'AliTrend', trending: true, image: '🎧'},
-            {id: 2, name: 'Quantum Charger Pad', category: 'tech', cost: 12, price: 49, supplier: 'TechDrop', trending: false, image: '⚡'},
-            {id: 3, name: 'Holographic Watch', category: 'fashion', cost: 25, price: 89, supplier: 'FashionAI', trending: true, image: '⌚'},
-            {id: 4, name: 'Smart Garden Hub', category: 'home', cost: 60, price: 199, supplier: 'HomeBot', trending: true, image: '🌱'},
-            {id: 5, name: 'Nano Drone X1', category: 'tech', cost: 35, price: 129, supplier: 'DroneZone', trending: false, image: '🚁'},
-            {id: 6, name: 'LED Face Mask', category: 'beauty', cost: 18, price: 79, supplier: 'BeautyAI', trending: true, image: '✨'},
-            {id: 7, name: 'Automatic Pet Feeder', category: 'pets', cost: 40, price: 149, supplier: 'PetTech', trending: false, image: '🐕'},
-            {id: 8, name: 'Portable Projector 4K', category: 'tech', cost: 120, price: 399, supplier: 'Visionary', trending: true, image: '📽️'}
+            {id: 1, name: 'Neural Interface Headset', category: 'tech', cost: 45, price: 149, supplier: 'AliTrend', image: '🎧'},
+            {id: 2, name: 'Quantum Charger Pad', category: 'tech', cost: 12, price: 49, supplier: 'TechDrop', image: '⚡'},
+            {id: 3, name: 'Holographic Watch', category: 'fashion', cost: 25, price: 89, supplier: 'FashionAI', image: '⌚'},
+            {id: 4, name: 'Smart Garden Hub', category: 'home', cost: 60, price: 199, supplier: 'HomeBot', image: '🌱'},
+            {id: 5, name: 'Nano Drone X1', category: 'tech', cost: 35, price: 129, supplier: 'DroneZone', image: '🚁'},
+            {id: 6, name: 'LED Face Mask', category: 'beauty', cost: 18, price: 79, supplier: 'BeautyAI', image: '✨'}
         ];
 
         let myProducts = JSON.parse(localStorage.getItem('xavier_my_products') || '[]');
-        let autoImportInterval = null;
+        let totalFeesPaid = 0;
 
         function init() {
             if (myProducts.length === 0) {
-                // Auto-populate with 3 starter products
                 myProducts = AI_PRODUCTS.slice(0, 3).map(p => ({...p, dateAdded: 'Just now'}));
                 saveProducts();
             }
@@ -172,91 +119,42 @@
         }
 
         function aiImportProducts() {
-            const niche = document.getElementById('niche-select').value;
-            const priceRange = document.getElementById('price-range').value;
             const btn = event.target;
-            
-            btn.innerHTML = '<span class="auto-importing">🤖 Scanning suppliers...</span>';
+            btn.innerHTML = '<span class="animate-pulse">🤖 Scanning...</span>';
             btn.disabled = true;
 
             setTimeout(() => {
-                // Filter products based on selection
-                let filtered = AI_PRODUCTS.filter(p => p.category === niche || niche === 'all');
-                
-                if (priceRange === 'low') filtered = filtered.filter(p => p.price < 50);
-                if (priceRange === 'mid') filtered = filtered.filter(p => p.price >= 50 && p.price < 200);
-                if (priceRange === 'high') filtered = filtered.filter(p => p.price >= 200);
-
-                // Add 2-4 random products
-                const count = Math.floor(Math.random() * 3) + 2;
-                const selected = filtered.sort(() => 0.5 - Math.random()).slice(0, count);
-                
+                const selected = AI_PRODUCTS.sort(() => 0.5 - Math.random()).slice(0, 3);
                 selected.forEach(p => {
                     if (!myProducts.find(mp => mp.id === p.id)) {
-                        myProducts.unshift({...p, dateAdded: new Date().toLocaleTimeString(), profit: p.price - p.cost});
+                        myProducts.unshift({...p, dateAdded: new Date().toLocaleTimeString()});
                     }
                 });
-
+                
                 saveProducts();
                 renderProducts(myProducts);
                 updateStats();
                 
-                btn.innerHTML = '✅ Imported ' + count + ' Products';
+                btn.innerHTML = '✅ Imported 3 Products';
                 setTimeout(() => {
                     btn.innerHTML = '🤖 AI Import Products';
                     btn.disabled = false;
                 }, 2000);
-            }, 2000);
-        }
-
-        function toggleAutoImport() {
-            const btn = document.getElementById('auto-btn');
-            if (autoImportInterval) {
-                clearInterval(autoImportInterval);
-                autoImportInterval = null;
-                btn.innerHTML = '<span class="w-2 h-2 bg-black rounded-full"></span> Auto-Import: OFF';
-                btn.classList.remove('bg-red-600', 'hover:bg-red-500');
-                btn.classList.add('bg-green-600', 'hover:bg-green-500');
-            } else {
-                btn.innerHTML = '<span class="w-2 h-2 bg-white rounded-full animate-pulse"></span> Auto-Import: ON';
-                btn.classList.remove('bg-green-600', 'hover:bg-green-500');
-                btn.classList.add('bg-red-600', 'hover:bg-red-500');
-                
-                // Simulate auto-import every 30 seconds
-                autoImportInterval = setInterval(() => {
-                    const random = AI_PRODUCTS[Math.floor(Math.random() * AI_PRODUCTS.length)];
-                    if (!myProducts.find(p => p.id === random.id)) {
-                        myProducts.unshift({...random, dateAdded: 'Auto', profit: random.price - random.cost});
-                        saveProducts();
-                        renderProducts(myProducts);
-                        updateStats();
-                        
-                        // Show notification
-                        const notif = document.createElement('div');
-                        notif.className = 'fixed bottom-4 right-4 bg-green-600 text-black px-6 py-3 rounded-lg font-bold z-50 animate-bounce';
-                        notif.innerHTML = `🤖 Auto-imported: ${random.name}`;
-                        document.body.appendChild(notif);
-                        setTimeout(() => notif.remove(), 3000);
-                    }
-                }, 30000);
-            }
+            }, 1500);
         }
 
         function renderProducts(products) {
             const grid = document.getElementById('product-grid');
             if (products.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-12">No products. Click AI Import to begin.</div>';
+                grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-12">No products.</div>';
                 return;
             }
 
             grid.innerHTML = products.map((p, idx) => `
-                <div class="product-card quantum-panel rounded-xl p-4 border border-green-500/20 relative overflow-hidden group">
-                    ${p.trending ? '<div class="absolute top-2 right-2 text-xs bg-red-500 text-white px-2 py-1 rounded">🔥 Trending</div>' : ''}
-                    
+                <div class="quantum-panel rounded-xl p-4 border border-green-500/20">
                     <div class="text-4xl mb-3 text-center py-4 bg-black/30 rounded-lg">${p.image}</div>
-                    
                     <h4 class="font-bold text-white mb-1 truncate">${p.name}</h4>
-                    <div class="text-xs text-gray-500 mb-3">${p.supplier} • Added ${p.dateAdded}</div>
+                    <div class="text-xs text-gray-500 mb-3">${p.supplier}</div>
                     
                     <div class="grid grid-cols-2 gap-2 mb-3 text-sm">
                         <div class="bg-black/30 p-2 rounded">
@@ -271,44 +169,49 @@
                     
                     <div class="flex justify-between items-center bg-green-900/20 border border-green-500/30 rounded-lg p-2 mb-3">
                         <span class="text-xs text-gray-400">Profit</span>
-                        <span class="text-green-400 font-bold">+$${p.profit || (p.price - p.cost)}</span>
+                        <span class="text-green-400 font-bold">+$${p.price - p.cost}</span>
                     </div>
 
-                    <div class="flex gap-2">
-                        <button onclick="pushToStore(${idx})" class="flex-1 bg-green-600 hover:bg-green-500 text-black py-2 rounded text-sm font-bold transition">Push to Store</button>
-                        <button onclick="deleteProduct(${idx})" class="bg-red-600/30 hover:bg-red-600/50 text-red-400 px-3 py-2 rounded text-sm border border-red-500/30">🗑</button>
-                    </div>
+                    <button onclick="pushToStore(${idx})" class="w-full bg-green-600 hover:bg-green-500 text-black py-2 rounded text-sm font-bold transition">
+                        Push to Store (4% fee)
+                    </button>
                 </div>
             `).join('');
+        }
+
+        function pushToStore(idx) {
+            const p = myProducts[idx];
+            const fee = p.price * 0.04;
+            const net = p.price - fee;
+            
+            if (confirm(`Push ${p.name} to store?\n\nSale Price: $${p.price}\nPlatform Fee (4%): $${fee.toFixed(2)}\nYou Receive: $${net.toFixed(2)}`)) {
+                // Track revenue
+                if (window.XavierRevenue) {
+                    XavierRevenue.addShopSale(p.price);
+                } else {
+                    const current = parseFloat(localStorage.getItem('xavier_revenue_commerce') || '0');
+                    localStorage.setItem('xavier_revenue_commerce', (current + fee).toFixed(2));
+                }
+                
+                totalFeesPaid += fee;
+                document.getElementById('stat-fees').textContent = '$' + totalFeesPaid.toFixed(2);
+                
+                alert(`🚀 Listed!\n\nPlatform fee of $${fee.toFixed(2)} contributed to Xavier ecosystem.`);
+            }
         }
 
         function updateStats() {
             const total = myProducts.length;
             const avgMargin = total > 0 ? (myProducts.reduce((sum, p) => sum + ((p.price - p.cost) / p.cost * 100), 0) / total).toFixed(1) : 0;
-            const profit = total > 0 ? myProducts.reduce((sum, p) => sum + (p.price - p.cost), 0) : 0;
             
             document.getElementById('stat-imported').textContent = total;
             document.getElementById('stat-margin').textContent = avgMargin + '%';
             document.getElementById('stat-inventory').textContent = total;
-            document.getElementById('stat-profit').textContent = '$' + (profit * 30).toFixed(0); // 30-day projection
-        }
-
-        function pushToStore(idx) {
-            const p = myProducts[idx];
-            alert(`🚀 Pushing ${p.name} to your connected stores...\n\n✅ Shopify: Listed\n✅ WooCommerce: Listed\n✅ eBay: Listed\n\nAI Description generated.\nSEO tags optimized.`);
-        }
-
-        function deleteProduct(idx) {
-            if (confirm('Remove from inventory?')) {
-                myProducts.splice(idx, 1);
-                saveProducts();
-                renderProducts(myProducts);
-                updateStats();
-            }
         }
 
         function saveProducts() {
             localStorage.setItem('xavier_my_products', JSON.stringify(myProducts));
+            localStorage.setItem('xavier_shop_count', myProducts.length.toString());
         }
 
         function searchProducts() {
@@ -317,34 +220,7 @@
             renderProducts(filtered);
         }
 
-        function exportCatalog() {
-            const csv = myProducts.map(p => `${p.name},${p.cost},${p.price},${p.supplier}`).join('\n');
-            const blob = new Blob([csv], {type: 'text/csv'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `xavier-catalog-${Date.now()}.csv`;
-            a.click();
-        }
-
-        function toggleFeature(btn) {
-            const isOn = btn.classList.contains('bg-green-500');
-            if (isOn) {
-                btn.classList.remove('bg-green-500');
-                btn.classList.add('bg-gray-600');
-                btn.querySelector('span').style.right = 'auto';
-                btn.querySelector('span').style.left = '4px';
-            } else {
-                btn.classList.remove('bg-gray-600');
-                btn.classList.add('bg-green-500');
-                btn.querySelector('span').style.left = 'auto';
-                btn.querySelector('span').style.right = '4px';
-            }
-        }
-
-        // Initialize
         init();
     </script>
-    
-    <script src="guard.js"></script>
 </body>
 </html>

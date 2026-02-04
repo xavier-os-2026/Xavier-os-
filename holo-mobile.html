@@ -1,0 +1,1514 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#000000">
+    <title>Xavier Holoverse Mobile</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.10.1/dist/nipplejs.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: #000; 
+            font-family: 'Rajdhani', sans-serif;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #game-container { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: 1;
+        }
+        
+        /* Mobile UI Layer */
+        .mobile-ui {
+            position: fixed;
+            z-index: 100;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .interactive { pointer-events: auto; }
+        
+        /* Virtual Joystick Zones */
+        .joystick-zone {
+            position: fixed;
+            bottom: 20px;
+            width: 150px;
+            height: 150px;
+            z-index: 200;
+            pointer-events: auto;
+        }
+        
+        #joystick-left {
+            left: 20px;
+        }
+        
+        #joystick-right {
+            right: 20px;
+        }
+        
+        /* Mobile Action Buttons */
+        .action-buttons {
+            position: fixed;
+            right: 20px;
+            bottom: 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 200;
+        }
+        
+        .action-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(0, 240, 255, 0.2);
+            border: 2px solid rgba(0, 240, 255, 0.5);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            pointer-events: auto;
+            transition: all 0.1s;
+            box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
+        }
+        
+        .action-btn:active {
+            transform: scale(0.95);
+            background: rgba(0, 240, 255, 0.4);
+        }
+        
+        .action-btn.jump { background: rgba(255, 193, 7, 0.2); border-color: rgba(255, 193, 7, 0.5); }
+        .action-btn.interact { background: rgba(0, 255, 136, 0.2); border-color: rgba(0, 255, 136, 0.5); }
+        .action-btn.phone { background: rgba(176, 38, 255, 0.2); border-color: rgba(176, 38, 255, 0.5); }
+        
+        /* Mobile HUD */
+        .mobile-hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            pointer-events: none;
+            z-index: 150;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
+        }
+        
+        .money-display {
+            text-align: right;
+        }
+        
+        .cash-text {
+            font-size: 32px;
+            font-weight: 900;
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            font-family: 'Orbitron', monospace;
+            line-height: 1;
+        }
+        
+        .xav-text {
+            font-size: 18px;
+            color: #ffffff;
+            margin-top: 2px;
+        }
+        
+        /* Minimap - Mobile Optimized */
+        .minimap-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(0,50,100,0.9) 0%, rgba(0,0,0,0.9) 100%);
+            border: 2px solid rgba(0, 240, 255, 0.5);
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+            z-index: 150;
+        }
+        
+        /* Status Bars */
+        .status-bars {
+            position: fixed;
+            top: 60px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 150;
+        }
+        
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .bar-label {
+            font-size: 12px;
+            color: #fff;
+            width: 30px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+        
+        .bar-container {
+            width: 100px;
+            height: 8px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .bar-fill {
+            height: 100%;
+            transition: width 0.3s;
+        }
+        
+        .health-fill { background: linear-gradient(90deg, #ff0040, #ff4080); width: 100%; }
+        .armor-fill { background: linear-gradient(90deg, #00f0ff, #4080ff); width: 100%; }
+        .stamina-fill { background: linear-gradient(90deg, #ffd700, #ffed4a); width: 100%; }
+        
+        /* Interaction Prompt - Mobile Style */
+        .interaction-prompt {
+            position: fixed;
+            bottom: 240px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00ff88;
+            padding: 12px 24px;
+            border-radius: 25px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 250;
+            pointer-events: auto;
+            backdrop-filter: blur(10px);
+        }
+        
+        .interaction-prompt.show {
+            display: flex;
+            animation: pulse-border 2s infinite;
+        }
+        
+        @keyframes pulse-border {
+            0%, 100% { border-color: #00ff88; box-shadow: 0 0 10px rgba(0, 255, 136, 0.3); }
+            50% { border-color: #00ffaa; box-shadow: 0 0 20px rgba(0, 255, 136, 0.6); }
+        }
+        
+        .tap-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 255, 136, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            animation: tap-animation 1s infinite;
+        }
+        
+        @keyframes tap-animation {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(0.9); }
+        }
+        
+        /* Phone Interface - Mobile Optimized */
+        .phone-container {
+            position: fixed;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            height: 85%;
+            background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1e 100%);
+            border-top: 3px solid #333;
+            border-radius: 30px 30px 0 0;
+            transition: bottom 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            z-index: 400;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .phone-container.open {
+            bottom: 0;
+        }
+        
+        .phone-handle {
+            width: 100%;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 10px;
+        }
+        
+        .handle-bar {
+            width: 50px;
+            height: 5px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+        
+        .phone-screen {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .app-icon {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            transition: transform 0.1s;
+            font-size: 24px;
+        }
+        
+        .app-icon:active {
+            transform: scale(0.95);
+            background: rgba(0, 240, 255, 0.3);
+        }
+        
+        .app-label {
+            font-size: 10px;
+            margin-top: 5px;
+            color: #fff;
+            text-align: center;
+        }
+        
+        /* Gesture Hints */
+        .gesture-hint {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 500;
+            display: none;
+        }
+        
+        .gesture-hint.show {
+            display: block;
+            animation: fade-out 3s forwards;
+        }
+        
+        @keyframes fade-out {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; pointer-events: none; }
+        }
+        
+        /* Loading Screen - Mobile */
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .loading-logo {
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        .loading-text {
+            font-size: 28px;
+            font-weight: 900;
+            color: #00f0ff;
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .loading-bar-container {
+            width: 100%;
+            max-width: 300px;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .loading-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00f0ff, #b026ff);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        /* Vehicle HUD - Mobile */
+        .vehicle-hud-mobile {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            display: none;
+            z-index: 150;
+        }
+        
+        .vehicle-hud-mobile.active {
+            display: block;
+        }
+        
+        .speed-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.8);
+            border: 3px solid #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .speed-value {
+            font-size: 36px;
+            font-weight: 900;
+            color: #fff;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .speed-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* Modals - Mobile Optimized */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 500;
+            display: none;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .modal.active {
+            display: block;
+        }
+        
+        .modal-content {
+            min-height: 100%;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+        
+        .modal-header {
+            position: sticky;
+            top: 0;
+            background: rgba(0,0,0,0.9);
+            padding: 20px 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+        
+        /* Quick Action Menu (Long Press) */
+        .quick-menu {
+            position: absolute;
+            background: rgba(0,0,0,0.9);
+            border: 2px solid #00f0ff;
+            border-radius: 15px;
+            padding: 10px;
+            display: none;
+            z-index: 300;
+            pointer-events: auto;
+        }
+        
+        .quick-menu-item {
+            padding: 12px 20px;
+            color: #fff;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+        }
+        
+        .quick-menu-item:last-child {
+            border-bottom: none;
+        }
+        
+        /* Tutorial Overlay */
+        .tutorial-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 600;
+            display: none;
+        }
+        
+        .tutorial-step {
+            position: absolute;
+            background: rgba(0, 240, 255, 0.2);
+            border: 2px solid #00f0ff;
+            border-radius: 10px;
+            padding: 15px;
+            color: #fff;
+            font-size: 14px;
+            max-width: 250px;
+        }
+        
+        .tutorial-arrow {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #00f0ff;
+            transform: rotate(45deg);
+        }
+        
+        /* Performance Mode Indicator */
+        .performance-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.6);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 10px;
+            color: #666;
+            z-index: 1000;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-height: 700px) {
+            .action-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+            
+            .action-buttons {
+                bottom: 150px;
+                gap: 10px;
+            }
+            
+            .minimap-container {
+                width: 100px;
+                height: 100px;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            /* Tablet optimizations */
+            .joystick-zone {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .action-btn {
+                width: 80px;
+                height: 80px;
+                font-size: 32px;
+            }
+        }
+        
+        /* Battery Saver Mode */
+        .battery-saver .minimap-container,
+        .battery-saver .status-bars {
+            display: none;
+        }
+        
+        /* Landscape Warning */
+        .orientation-warning {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        @media (orientation: portrait) {
+            .orientation-warning {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Orientation Warning -->
+    <div class="orientation-warning">
+        <div style="font-size: 48px; margin-bottom: 20px;">📱</div>
+        <h2 style="color: #00f0ff; font-family: 'Orbitron', sans-serif; margin-bottom: 10px;">ROTATE DEVICE</h2>
+        <p style="color: #666;">Please rotate to landscape for the best experience</p>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-logo">🌐</div>
+        <div class="loading-text">XAVIER<br>HOLOVERSE</div>
+        <div class="loading-bar-container">
+            <div id="loading-bar" class="loading-bar"></div>
+        </div>
+        <div id="loading-status" style="margin-top: 20px; color: #666; font-size: 12px;">Optimizing for mobile...</div>
+    </div>
+
+    <!-- Game Container -->
+    <div id="game-container"></div>
+
+    <!-- Performance Indicator -->
+    <div class="performance-indicator" id="perf-indicator">60 FPS</div>
+
+    <!-- Mobile UI -->
+    <div class="mobile-ui" id="mobile-ui">
+        
+        <!-- Top HUD -->
+        <div class="mobile-hud">
+            <div class="status-bars">
+                <div class="status-bar">
+                    <span class="bar-label">HP</span>
+                    <div class="bar-container">
+                        <div class="bar-fill health-fill" id="health-bar"></div>
+                    </div>
+                </div>
+                <div class="status-bar">
+                    <span class="bar-label">ARM</span>
+                    <div class="bar-container">
+                        <div class="bar-fill armor-fill" id="armor-bar"></div>
+                    </div>
+                </div>
+                <div class="status-bar">
+                    <span class="bar-label">STM</span>
+                    <div class="bar-container">
+                        <div class="bar-fill stamina-fill" id="stamina-bar"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="money-display">
+                <div class="cash-text">$<span id="cash-display">0</span></div>
+                <div class="xav-text"><span id="xav-display">0</span> XAV</div>
+            </div>
+        </div>
+
+        <!-- Minimap -->
+        <div class="minimap-container" id="minimap">
+            <div id="minimap-content" style="position: relative; width: 100%; height: 100%;">
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88; z-index: 10;"></div>
+            </div>
+        </div>
+
+        <!-- Joystick Zones -->
+        <div id="joystick-left" class="joystick-zone"></div>
+        <div id="joystick-right" class="joystick-zone" style="opacity: 0.3;"></div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <div class="action-btn phone" onclick="togglePhone()">📱</div>
+            <div class="action-btn interact" onclick="attemptInteraction()">👆</div>
+            <div class="action-btn jump" onclick="playerJump()">⬆️</div>
+        </div>
+
+        <!-- Vehicle HUD -->
+        <div class="vehicle-hud-mobile" id="vehicle-hud">
+            <div class="speed-circle">
+                <div class="speed-value" id="speed-display">0</div>
+                <div class="speed-label">MPH</div>
+            </div>
+        </div>
+
+        <!-- Interaction Prompt -->
+        <div id="interaction-prompt" class="interaction-prompt interactive">
+            <div class="tap-icon">👆</div>
+            <span id="interaction-text">Tap to interact</span>
+        </div>
+
+        <!-- Gesture Hints -->
+        <div id="gesture-hint" class="gesture-hint">
+            <div style="font-size: 48px; margin-bottom: 10px;" id="hint-icon">👆</div>
+            <div style="color: #fff; font-size: 16px;" id="hint-text">Tap to interact</div>
+        </div>
+    </div>
+
+    <!-- Phone Interface -->
+    <div id="phone" class="phone-container">
+        <div class="phone-handle" onclick="togglePhone()">
+            <div class="handle-bar"></div>
+        </div>
+        <div class="phone-screen">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 48px; font-weight: bold; color: #fff;" id="phone-time">12:00</div>
+                <div style="color: #666; font-size: 14px;" id="phone-date">Monday, Jan 1</div>
+            </div>
+            
+            <div class="app-grid">
+                <div class="app-icon" onclick="openApp('bank')">
+                    <div>🏦</div>
+                    <div class="app-label">Bank</div>
+                </div>
+                <div class="app-icon" onclick="openApp('realestate')">
+                    <div>🏠</div>
+                    <div class="app-label">Dynasty 8</div>
+                </div>
+                <div class="app-icon" onclick="openApp('jobs')">
+                    <div>💼</div>
+                    <div class="app-label">Jobs</div>
+                </div>
+                <div class="app-icon" onclick="openApp('shop')">
+                    <div>🏪</div>
+                    <div class="app-label">Stores</div>
+                </div>
+                <div class="app-icon" onclick="openApp('vehicles')">
+                    <div>🚗</div>
+                    <div class="app-label">Vehicles</div>
+                </div>
+                <div class="app-icon" onclick="openApp('map')">
+                    <div>🗺️</div>
+                    <div class="app-label">Map</div>
+                </div>
+                <div class="app-icon" onclick="openApp('settings')">
+                    <div>⚙️</div>
+                    <div class="app-label">Settings</div>
+                </div>
+                <div class="app-icon" onclick="togglePhone()">
+                    <div>✕</div>
+                    <div class="app-label">Close</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 15px;">
+                <div style="color: #00f0ff; font-size: 12px; margin-bottom: 10px; text-transform: uppercase;">Quick Stats</div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="color: #666; font-size: 14px;">Properties</span>
+                    <span style="color: #fff; font-size: 14px;" id="stat-properties">0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="color: #666; font-size: 14px;">Jobs Done</span>
+                    <span style="color: #fff; font-size: 14px;" id="stat-jobs">0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #666; font-size: 14px;">Level</span>
+                    <span style="color: #fff; font-size: 14px;" id="stat-level">1</span>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 10px;">
+                <div style="color: #00ff88; font-size: 11px; margin-bottom: 5px;">PASSIVE INCOME</div>
+                <div style="color: #fff; font-size: 18px; font-weight: bold;">+<span id="passive-rate">0</span> XAV / 10min</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal-bank" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: #00f0ff; font-family: 'Orbitron'; font-size: 24px;">MAZE BANK</h2>
+                <button onclick="closeModal('modal-bank')" style="background: none; border: none; color: #fff; font-size: 24px;">✕</button>
+            </div>
+            <div style="background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 15px; padding: 20px; margin-bottom: 20px;">
+                <div style="color: #666; font-size: 12px; margin-bottom: 5px;">CURRENT BALANCE</div>
+                <div style="color: #00f0ff; font-size: 36px; font-weight: 900; font-family: 'Orbitron';">$<span id="bank-balance">0</span></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <button class="action-btn" style="width: 100%; border-radius: 10px;" onclick="depositCash()">Deposit</button>
+                <button class="action-btn" style="width: 100%; border-radius: 10px;" onclick="withdrawCash()">Withdraw</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-realestate" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: #ffd700; font-family: 'Orbitron'; font-size: 24px;">DYNASTY 8</h2>
+                <button onclick="closeModal('modal-realestate')" style="background: none; border: none; color: #fff; font-size: 24px;">✕</button>
+            </div>
+            <div id="property-list-mobile" style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- Properties injected here -->
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-jobs" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: #b026ff; font-family: 'Orbitron'; font-size: 24px;">JOB CENTER</h2>
+                <button onclick="closeModal('modal-jobs')" style="background: none; border: none; color: #fff; font-size: 24px;">✕</button>
+            </div>
+            <div id="jobs-list-mobile" style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- Jobs injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // XAVIER HOLOVERSE MOBILE ENGINE
+        // Optimized for Touch & Mobile GPUs
+        // ==========================================
+
+        const GameState = {
+            player: {
+                cash: 5000,
+                xav: 1000,
+                health: 100,
+                armor: 100,
+                stamina: 100,
+                position: { x: 0, y: 10, z: 0 },
+                properties: [],
+                jobsCompleted: 0,
+                level: 1,
+                xp: 0
+            },
+            settings: {
+                graphics: 'high', // high, medium, low, battery
+                sensitivity: 1.0,
+                gyroscope: false
+            },
+            isMobile: true
+        };
+
+        // Mobile Detection & Optimization
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const isLowEnd = navigator.hardwareConcurrency <= 4 || navigator.deviceMemory <= 4;
+        
+        if (isLowEnd) {
+            GameState.settings.graphics = 'medium';
+        }
+
+        // Physics & Graphics
+        let scene, camera, renderer, world;
+        let playerBody, playerMesh;
+        let joysticks = {};
+
+        // Initialize
+        function init() {
+            simulateLoading(() => {
+                initPhysics();
+                initGraphics();
+                initWorld();
+                initPlayer();
+                initJoysticks();
+                initGyroscope();
+                initEvents();
+                startGameLoop();
+                updateHUD();
+                showGestureHint('👆', 'Drag left joystick to move');
+            });
+        }
+
+        function simulateLoading(callback) {
+            const steps = [
+                { progress: 15, text: "Detecting device capabilities..." },
+                { progress: 30, text: "Optimizing for mobile GPU..." },
+                { progress: 50, text: "Generating lightweight terrain..." },
+                { progress: 70, text: "Initializing touch controls..." },
+                { progress: 85, text: "Calibrating sensors..." },
+                { progress: 100, text: "Entering Holoverse..." }
+            ];
+
+            let current = 0;
+            const bar = document.getElementById('loading-bar');
+            const status = document.getElementById('loading-status');
+
+            const interval = setInterval(() => {
+                if (current >= steps.length) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById('loading-screen').style.opacity = '0';
+                        setTimeout(() => {
+                            document.getElementById('loading-screen').style.display = 'none';
+                            callback();
+                        }, 500);
+                    }, 500);
+                    return;
+                }
+
+                bar.style.width = steps[current].progress + '%';
+                status.textContent = steps[current].text;
+                current++;
+            }, 600);
+        }
+
+        function initPhysics() {
+            world = new CANNON.World();
+            world.gravity.set(0, -20, 0);
+            world.broadphase = new CANNON.NaiveBroadphase();
+            world.solver.iterations = 8; // Reduced for mobile
+        }
+
+        function initGraphics() {
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x87CEEB, 0.003);
+            scene.background = new THREE.Color(0x87CEEB);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            // Mobile renderer settings
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: false, // Disabled for performance
+                powerPreference: "low-power",
+                alpha: false
+            });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFShadowMap; // Faster than PCFSoft
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            
+            document.getElementById('game-container').appendChild(renderer.domElement);
+
+            // Optimized lighting
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+            scene.add(ambientLight);
+
+            const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            sunLight.position.set(100, 200, 100);
+            sunLight.castShadow = true;
+            
+            // Mobile-optimized shadow map
+            sunLight.shadow.mapSize.width = 1024;
+            sunLight.shadow.mapSize.height = 1024;
+            sunLight.shadow.camera.near = 0.5;
+            sunLight.shadow.camera.far = 300;
+            sunLight.shadow.camera.left = -100;
+            sunLight.shadow.camera.right = 100;
+            sunLight.shadow.camera.top = 100;
+            sunLight.shadow.camera.bottom = -100;
+            
+            scene.add(sunLight);
+        }
+
+        function initWorld() {
+            // Simplified terrain for mobile
+            createMobileTerrain();
+            createMobileCity();
+            createVegetation();
+        }
+
+        function createMobileTerrain() {
+            // Lower resolution for mobile
+            const geometry = new THREE.PlaneGeometry(1000, 1000, 64, 64);
+            const simplex = new SimplexNoise();
+            
+            const vertices = geometry.attributes.position.array;
+            for (let i = 0; i < vertices.length; i += 3) {
+                const x = vertices[i];
+                const y = vertices[i + 1];
+                
+                let elevation = simplex.noise2D(x * 0.002, y * 0.002) * 30;
+                elevation += simplex.noise2D(x * 0.01, y * 0.01) * 5;
+                
+                const dist = Math.sqrt(x*x + y*y);
+                if (dist < 200) elevation *= (dist / 200);
+                
+                vertices[i + 2] = Math.max(0, elevation);
+            }
+            
+            geometry.computeVertexNormals();
+            
+            const material = new THREE.MeshStandardMaterial({ 
+                color: 0x2d5016,
+                roughness: 0.9,
+                metalness: 0.0
+            });
+            
+            const terrain = new THREE.Mesh(geometry, material);
+            terrain.rotation.x = -Math.PI / 2;
+            terrain.receiveShadow = true;
+            scene.add(terrain);
+            
+            // Physics ground
+            const groundShape = new CANNON.Plane();
+            const groundBody = new CANNON.Body({ mass: 0 });
+            groundBody.addShape(groundShape);
+            groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+            world.addBody(groundBody);
+        }
+
+        function createMobileCity() {
+            // Reduced building count for mobile
+            for (let i = 0; i < 30; i++) {
+                const height = Math.random() * 80 + 40;
+                const width = Math.random() * 15 + 10;
+                const depth = Math.random() * 15 + 10;
+                
+                const geometry = new THREE.BoxGeometry(width, height, depth);
+                const material = new THREE.MeshStandardMaterial({
+                    color: 0x666666,
+                    roughness: 0.3,
+                    metalness: 0.7
+                });
+                
+                const building = new THREE.Mesh(geometry, material);
+                
+                const angle = (i / 30) * Math.PI * 2;
+                const radius = Math.random() * 80 + 40;
+                building.position.set(
+                    Math.cos(angle) * radius,
+                    height / 2,
+                    Math.sin(angle) * radius
+                );
+                
+                building.castShadow = true;
+                building.receiveShadow = true;
+                scene.add(building);
+                
+                // Physics
+                const shape = new CANNON.Box(new CANNON.Vec3(width/2, height/2, depth/2));
+                const body = new CANNON.Body({ mass: 0 });
+                body.addShape(shape);
+                body.position.copy(building.position);
+                world.addBody(body);
+            }
+        }
+
+        function createVegetation() {
+            // Reduced tree count
+            for (let i = 0; i < 200; i++) {
+                const x = (Math.random() - 0.5) * 800;
+                const z = (Math.random() - 0.5) * 800;
+                
+                if (Math.sqrt(x*x + z*z) < 150) continue;
+                
+                const trunkGeo = new THREE.CylinderGeometry(0.3, 0.5, 3);
+                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a3728 });
+                const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+                trunk.position.set(x, 1.5, z);
+                
+                const leavesGeo = new THREE.ConeGeometry(2, 6, 6);
+                const leavesMat = new THREE.MeshStandardMaterial({ color: 0x2d5016 });
+                const leaves = new THREE.Mesh(leavesGeo, leavesMat);
+                leaves.position.set(x, 5, z);
+                
+                scene.add(trunk);
+                scene.add(leaves);
+            }
+        }
+
+        function initPlayer() {
+            const geometry = new THREE.CapsuleGeometry(0.8, 2.5, 4, 8);
+            const material = new THREE.MeshStandardMaterial({ color: 0x00f0ff });
+            playerMesh = new THREE.Mesh(geometry, material);
+            playerMesh.position.set(0, 5, 0);
+            playerMesh.castShadow = true;
+            scene.add(playerMesh);
+            
+            const shape = new CANNON.Sphere(0.8);
+            playerBody = new CANNON.Body({
+                mass: 70,
+                shape: shape,
+                position: new CANNON.Vec3(0, 5, 0),
+                fixedRotation: true
+            });
+            playerBody.linearDamping = 0.9;
+            world.addBody(playerBody);
+        }
+
+        // MOBILE JOYSTICKS
+        function initJoysticks() {
+            // Movement joystick (Left)
+            joysticks.move = nipplejs.create({
+                zone: document.getElementById('joystick-left'),
+                mode: 'static',
+                position: { left: '75px', bottom: '75px' },
+                color: 'rgba(0, 240, 255, 0.5)',
+                size: 120
+            });
+
+            // Look joystick (Right) - Optional, can also use gyro
+            joysticks.look = nipplejs.create({
+                zone: document.getElementById('joystick-right'),
+                mode: 'static',
+                position: { right: '75px', bottom: '75px' },
+                color: 'rgba(255, 255, 255, 0.3)',
+                size: 100
+            });
+
+            let moveVector = { x: 0, y: 0 };
+            let lookVector = { x: 0, y: 0 };
+
+            joysticks.move.on('move', (evt, data) => {
+                moveVector.x = data.vector.x;
+                moveVector.y = data.vector.y;
+            });
+
+            joysticks.move.on('end', () => {
+                moveVector.x = 0;
+                moveVector.y = 0;
+            });
+
+            joysticks.look.on('move', (evt, data) => {
+                if (!GameState.settings.gyroscope) {
+                    camera.rotation.y -= data.vector.x * 0.02 * GameState.settings.sensitivity;
+                    camera.rotation.x -= data.vector.y * 0.02 * GameState.settings.sensitivity;
+                    camera.rotation.x = Math.max(-Math.PI/3, Math.min(Math.PI/3, camera.rotation.x));
+                }
+            });
+
+            GameState.moveVector = moveVector;
+        }
+
+        // GYROSCOPE SUPPORT
+        function initGyroscope() {
+            if (window.DeviceOrientationEvent) {
+                // iOS 13+ permission request
+                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    // Will request on user interaction
+                } else {
+                    window.addEventListener('deviceorientation', handleOrientation);
+                    GameState.settings.gyroscope = true;
+                }
+            }
+        }
+
+        function requestGyroPermission() {
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(response => {
+                        if (response == 'granted') {
+                            window.addEventListener('deviceorientation', handleOrientation);
+                            GameState.settings.gyroscope = true;
+                        }
+                    })
+                    .catch(console.error);
+            }
+        }
+
+        function handleOrientation(event) {
+            if (!GameState.settings.gyroscope) return;
+            
+            const alpha = event.alpha; // Z-axis
+            const beta = event.beta;   // X-axis
+            const gamma = event.gamma; // Y-axis
+            
+            // Map gyro to camera rotation
+            if (beta !== null && gamma !== null) {
+                camera.rotation.x = (beta - 45) * Math.PI / 180;
+                camera.rotation.y = -gamma * Math.PI / 180;
+            }
+        }
+
+        function initEvents() {
+            // Touch events for interaction
+            let touchStartTime = 0;
+            let touchStartPos = { x: 0, y: 0 };
+            
+            document.addEventListener('touchstart', (e) => {
+                touchStartTime = Date.now();
+                touchStartPos.x = e.touches[0].clientX;
+                touchStartPos.y = e.touches[0].clientY;
+            }, { passive: true });
+            
+            document.addEventListener('touchend', (e) => {
+                const touchDuration = Date.now() - touchStartTime;
+                const touchEndPos = {
+                    x: e.changedTouches[0].clientX,
+                    y: e.changedTouches[0].clientY
+                };
+                
+                const distance = Math.sqrt(
+                    Math.pow(touchEndPos.x - touchStartPos.x, 2) + 
+                    Math.pow(touchEndPos.y - touchStartPos.y, 2)
+                );
+                
+                // Tap detection (short duration, minimal movement)
+                if (touchDuration < 200 && distance < 10) {
+                    // Check if tap was on UI
+                    if (e.target.closest('.interactive') || e.target.closest('.joystick-zone')) {
+                        return;
+                    }
+                    attemptInteraction();
+                }
+            }, { passive: true });
+            
+            // Prevent default touch behaviors
+            document.addEventListener('touchmove', (e) => {
+                if (e.target.closest('.joystick-zone') || e.target.closest('.phone-screen')) {
+                    return;
+                }
+                e.preventDefault();
+            }, { passive: false });
+            
+            // Visibility change (save battery when backgrounded)
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    // Pause expensive operations
+                }
+            });
+        }
+
+        // GAME LOOP
+        function startGameLoop() {
+            let lastTime = performance.now();
+            let frameCount = 0;
+            let lastFpsTime = lastTime;
+            
+            const animate = () => {
+                requestAnimationFrame(animate);
+                
+                const currentTime = performance.now();
+                const delta = (currentTime - lastTime) / 1000;
+                lastTime = currentTime;
+                
+                // FPS Counter
+                frameCount++;
+                if (currentTime - lastFpsTime >= 1000) {
+                    document.getElementById('perf-indicator').textContent = frameCount + ' FPS';
+                    frameCount = 0;
+                    lastFpsTime = currentTime;
+                }
+                
+                updatePhysics();
+                updatePlayerMobile();
+                updateCamera();
+                updateMinimap();
+                
+                renderer.render(scene, camera);
+            };
+            animate();
+            
+            // Economy tick
+            setInterval(updateEconomy, 10000);
+            setInterval(updateTime, 1000);
+        }
+
+        function updatePhysics() {
+            world.step(1/60);
+            
+            if (playerBody && playerMesh) {
+                playerMesh.position.copy(playerBody.position);
+                playerMesh.quaternion.copy(playerBody.quaternion);
+                GameState.player.position = {
+                    x: playerBody.position.x,
+                    y: playerBody.position.y,
+                    z: playerBody.position.z
+                };
+            }
+        }
+
+        function updatePlayerMobile() {
+            if (!GameState.moveVector) return;
+            
+            const speed = 8;
+            const vx = GameState.moveVector.x * speed;
+            const vz = -GameState.moveVector.y * speed;
+            
+            // Apply camera rotation to movement
+            const forward = new THREE.Vector3(0, 0, -1);
+            forward.applyQuaternion(camera.quaternion);
+            forward.y = 0;
+            forward.normalize();
+            
+            const right = new THREE.Vector3(1, 0, 0);
+            right.applyQuaternion(camera.quaternion);
+            right.y = 0;
+            right.normalize();
+            
+            playerBody.velocity.x = (forward.x * vz + right.x * vx);
+            playerBody.velocity.z = (forward.z * vz + right.z * vx);
+            
+            // Stamina regeneration
+            if (GameState.player.stamina < 100) {
+                GameState.player.stamina += 0.1;
+                updateStatusBars();
+            }
+        }
+
+        function playerJump() {
+            if (Math.abs(playerBody.velocity.y) < 0.1 && GameState.player.stamina >= 20) {
+                playerBody.velocity.y = 10;
+                GameState.player.stamina -= 20;
+                updateStatusBars();
+                
+                // Haptic feedback
+                if (navigator.vibrate) navigator.vibrate(50);
+            }
+        }
+
+        function updateCamera() {
+            if (!playerMesh) return;
+            
+            const offset = new THREE.Vector3(0, 4, 8);
+            offset.applyQuaternion(camera.quaternion);
+            
+            const targetPos = playerMesh.position.clone().add(offset);
+            camera.position.lerp(targetPos, 0.1);
+            camera.lookAt(playerMesh.position);
+        }
+
+        function updateMinimap() {
+            const content = document.getElementById('minimap-content');
+            const blip = content.querySelector('div');
+            
+            const mapScale = 0.1;
+            const x = 50 + (GameState.player.position.x * mapScale);
+            const y = 50 + (GameState.player.position.z * mapScale);
+            
+            blip.style.left = Math.max(0, Math.min(100, x)) + '%';
+            blip.style.top = Math.max(0, Math.min(100, y)) + '%';
+        }
+
+        function updateStatusBars() {
+            document.getElementById('health-bar').style.width = GameState.player.health + '%';
+            document.getElementById('armor-bar').style.width = GameState.player.armor + '%';
+            document.getElementById('stamina-bar').style.width = GameState.player.stamina + '%';
+        }
+
+        // UI FUNCTIONS
+        function togglePhone() {
+            const phone = document.getElementById('phone');
+            phone.classList.toggle('open');
+            
+            // Haptic
+            if (navigator.vibrate) navigator.vibrate(30);
+        }
+
+        function openApp(app) {
+            // Haptic
+            if (navigator.vibrate) navigator.vibrate(20);
+            
+            switch(app) {
+                case 'bank':
+                    document.getElementById('bank-balance').textContent = GameState.player.cash.toLocaleString();
+                    openModal('modal-bank');
+                    break;
+                case 'realestate':
+                    renderProperties();
+                    openModal('modal-realestate');
+                    break;
+                case 'jobs':
+                    renderJobs();
+                    openModal('modal-jobs');
+                    break;
+                case 'shop':
+                    showGestureHint('🏪', 'Visit physical shops in the world to rent them');
+                    break;
+                case 'vehicles':
+                    showGestureHint('🚗', 'Approach vehicles and tap interact to drive');
+                    break;
+                case 'map':
+                    showGestureHint('🗺️', 'Use the minimap to navigate the city');
+                    break;
+                case 'settings':
+                    toggleGraphics();
+                    break;
+            }
+            
+            togglePhone();
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function renderProperties() {
+            const list = document.getElementById('property-list-mobile');
+            const properties = [
+                { id: 1, name: "Luxury Condo", price: 250000, reward: 50, owned: false },
+                { id: 2, name: "Suburban House", price: 450000, reward: 100, owned: false },
+                { id: 3, name: "Mansion", price: 1200000, reward: 300, owned: false }
+            ];
+            
+            list.innerHTML = properties.map(prop => `
+                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <h3 style="color: #fff; font-size: 18px;">${prop.name}</h3>
+                        <span style="color: #00f0ff; font-weight: bold;">$${prop.price.toLocaleString()}</span>
+                    </div>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Generates ${prop.reward} XAV every 10 minutes</p>
+                    <button onclick="buyProperty(${prop.id}, ${prop.price})" style="width: 100%; background: linear-gradient(90deg, #00f0ff, #b026ff); color: #000; border: none; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 16px;">
+                        Purchase
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function renderJobs() {
+            const list = document.getElementById('jobs-list-mobile');
+            const jobs = [
+                { id: 1, title: "Delivery Driver", pay: 500, xav: 50, time: "10 min" },
+                { id: 2, title: "Security Guard", pay: 800, xav: 80, time: "20 min" },
+                { id: 3, title: "Hacker", pay: 2000, xav: 200, time: "30 min" }
+            ];
+            
+            list.innerHTML = jobs.map(job => `
+                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <h3 style="color: #fff; font-size: 18px;">${job.title}</h3>
+                        <span style="color: #00ff88; font-weight: bold;">$${job.pay}</span>
+                    </div>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 15px;">Duration: ${job.time} • ${job.xav} XAV reward</p>
+                    <button onclick="startJob(${job.id})" style="width: 100%; background: rgba(176, 38, 255, 0.3); border: 1px solid rgba(176, 38, 255, 0.5); color: #fff; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 16px;">
+                        Start Job
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // ECONOMY FUNCTIONS
+        function buyProperty(id, price) {
+            if (GameState.player.cash >= price) {
+                GameState.player.cash -= price;
+                GameState.player.properties.push({ id: id, xavReward: 50 });
+                updateHUD();
+                closeModal('modal-realestate');
+                showGestureHint('🏠', 'Property purchased! Earn passive XAV income.');
+                
+                if (navigator.vibrate) navigator.vibrate([50, 100, 50]);
+            } else {
+                alert('Insufficient funds!');
+            }
+        }
+
+        function startJob(id) {
+            const netPay = 500 * 0.8; // 20% fee
+            const fee = 500 * 0.2;
+            
+            GameState.player.cash += netPay;
+            GameState.player.xav += 50;
+            GameState.player.jobsCompleted++;
+            
+            updateHUD();
+            closeModal('modal-jobs');
+            showGestureHint('💰', `Job complete! Earned $${netPay} (Platform fee: $${fee})`);
+        }
+
+        function updateEconomy() {
+            let totalReward = 0;
+            GameState.player.properties.forEach(prop => {
+                totalReward += prop.xavReward || 50;
+            });
+            
+            if (totalReward > 0) {
+                GameState.player.xav += totalReward;
+                updateHUD();
+                showGestureHint('💎', `+${totalReward} XAV passive income received`);
+            }
+        }
+
+        function updateHUD() {
+            document.getElementById('cash-display').textContent = GameState.player.cash.toLocaleString();
+            document.getElementById('xav-display').textContent = GameState.player.xav.toLocaleString();
+            document.getElementById('stat-properties').textContent = GameState.player.properties.length;
+            document.getElementById('stat-jobs').textContent = GameState.player.jobsCompleted;
+            document.getElementById('stat-level').textContent = GameState.player.level;
+            document.getElementById('passive-rate').textContent = GameState.player.properties.length * 50;
+            
+            localStorage.setItem('xavier_mobile_save', JSON.stringify(GameState));
+        }
+
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('phone-time').textContent = 
+                now.getHours().toString().padStart(2, '0') + ':' + 
+                now.getMinutes().toString().padStart(2, '0');
+        }
+
+        function attemptInteraction() {
+            // Show prompt briefly
+            const prompt = document.getElementById('interaction-prompt');
+            prompt.classList.add('show');
+            setTimeout(() => prompt.classList.remove('show'), 2000);
+            
+            // Raycast for objects
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+            
+            // Check intersections
+            // Logic for shops, vehicles, etc.
+        }
+
+        function showGestureHint(icon, text) {
+            const hint = document.getElementById('gesture-hint');
+            document.getElementById('hint-icon').textContent = icon;
+            document.getElementById('hint-text').textContent = text;
+            hint.classList.add('show');
+            setTimeout(() => hint.classList.remove('show'), 3000);
+        }
+
+        function toggleGraphics() {
+            const modes = ['high', 'medium', 'low', 'battery'];
+            const currentIdx = modes.indexOf(GameState.settings.graphics);
+            const nextIdx = (currentIdx + 1) % modes.length;
+            GameState.settings.graphics = modes[nextIdx];
+            
+            showGestureHint('⚙️', `Graphics: ${GameState.settings.graphics.toUpperCase()}`);
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            const save = localStorage.getItem('xavier_mobile_save');
+            if (save) {
+                Object.assign(GameState, JSON.parse(save));
+            }
+            init();
+        });
+    </script>
+</body>
+</html>

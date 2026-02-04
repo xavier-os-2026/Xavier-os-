@@ -1,10 +1,13 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
     <title>Settings | Xavier OS</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="guard.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root { --void-black: #020204; }
@@ -25,6 +28,33 @@
     </header>
 
     <main class="max-w-3xl mx-auto px-6 py-8 space-y-6">
+        
+        <!-- Revenue Export (Architect Only) -->
+        <div id="revenue-export" class="quantum-panel rounded-2xl p-6 border border-green-500/30 hidden">
+            <h3 class="font-orbitron text-lg font-bold mb-4 text-green-400">Revenue Data Export</h3>
+            <div class="space-y-3 mb-4">
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-400">Shop Sales (4%)</span>
+                    <span class="text-green-400" id="export-shops">$0.00</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-400">Transactions (2%)</span>
+                    <span class="text-cyan-400" id="export-tx">$0.00</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-400">Task Rewards (20%)</span>
+                    <span class="text-purple-400" id="export-tasks">$0.00</span>
+                </div>
+                <div class="border-t border-gray-700 pt-2 flex justify-between font-bold">
+                    <span class="text-white">Total</span>
+                    <span class="text-yellow-400" id="export-total">$0.00</span>
+                </div>
+            </div>
+            <button onclick="exportAllData()" class="w-full bg-green-600 hover:bg-green-500 text-black font-bold py-3 rounded-lg transition">
+                📊 Export All Revenue Data
+            </button>
+        </div>
+
         <div class="quantum-panel rounded-2xl p-6">
             <h3 class="font-orbitron text-lg font-bold mb-4 text-cyan-400">Quantum Encryption</h3>
             <div class="flex justify-between items-center mb-4">
@@ -55,20 +85,58 @@
         <div class="quantum-panel rounded-2xl p-6">
             <h3 class="font-orbitron text-lg font-bold mb-4 text-yellow-400">Access Control</h3>
             <div class="text-sm text-gray-400 mb-4">Current Level: <span id="current-level" class="text-white font-bold">Standard</span></div>
-            <button onclick="window.location.href='pricing.html'" class="w-full bg-yellow-600/30 border border-yellow-500 py-3 rounded hover:bg-yellow-600/50 transition">Upgrade Access</button>
+            <button onclick="window.location.href='pricing.html'" class="w-full bg-yellow-600/30 border border-yellow-500 py-3 rounded hover:bg-yellow-600/50 transition text-yellow-400 mb-3">
+                Upgrade Access
+            </button>
         </div>
 
         <div class="quantum-panel rounded-2xl p-6 border border-red-500/30 bg-red-900/5">
             <h3 class="font-orbitron text-lg font-bold mb-4 text-red-400">Danger Zone</h3>
-            <button onclick="localStorage.clear(); alert('Session cleared'); window.location.reload()" class="w-full bg-red-600/30 border border-red-500 py-3 rounded hover:bg-red-600/50 transition text-red-400">Purge All Data</button>
+            <button onclick="localStorage.clear(); alert('Session cleared'); window.location.reload()" class="w-full bg-red-600/30 border border-red-500 py-3 rounded hover:bg-red-600/50 transition text-red-400 mb-3">
+                Purge All Data
+            </button>
+            <button onclick="XavierSecurity.logout()" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded transition">
+                Logout Completely
+            </button>
         </div>
     </main>
 
     <script>
-        const session = localStorage.getItem('xavier_quantum_session');
-        if (session) {
+        // Check tier and show revenue export if architect
+        const session = JSON.parse(localStorage.getItem('xavier_quantum_session') || '{}');
+        if (session.tier === 'architect') {
+            document.getElementById('revenue-export').classList.remove('hidden');
             document.getElementById('current-level').textContent = 'Architect';
             document.getElementById('current-level').className = 'text-green-400 font-bold';
+            
+            // Load stats
+            const stats = XavierRevenue ? XavierRevenue.getStats() : {
+                shops: parseFloat(localStorage.getItem('xavier_revenue_commerce') || 0),
+                tx: parseFloat(localStorage.getItem('xavier_revenue_tx') || 0),
+                tasks: parseFloat(localStorage.getItem('xavier_revenue_tasks') || 0)
+            };
+            
+            document.getElementById('export-shops').textContent = '$' + stats.shops.toFixed(2);
+            document.getElementById('export-tx').textContent = '$' + stats.tx.toFixed(2);
+            document.getElementById('export-tasks').textContent = '$' + stats.tasks.toFixed(2);
+            document.getElementById('export-total').textContent = '$' + (stats.shops + stats.tx + stats.tasks).toFixed(2);
+        }
+
+        function exportAllData() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                revenue: XavierRevenue ? XavierRevenue.getStats() : {},
+                user_tier: session.tier,
+                export_type: 'complete_backup'
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `xavier-complete-export-${Date.now()}.json`;
+            a.click();
+            
+            alert('✅ Export complete!\n\nAll revenue data has been downloaded.');
         }
     </script>
 </body>
