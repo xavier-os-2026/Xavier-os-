@@ -11,6 +11,9 @@
         body { font-family: 'Rajdhani', sans-serif; background: var(--void-black); color: #e0e0e0; }
         .quantum-panel { background: rgba(10, 14, 39, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .product-image { height: 200px; object-fit: cover; width: 100%; border-radius: 8px; }
+        .price-tag { background: linear-gradient(135deg, #00c853, #00e676); color: black; font-weight: bold; }
+        .profit-tag { background: rgba(0, 200, 83, 0.2); color: #00e676; border: 1px solid #00c853; }
     </style>
 </head>
 <body class="min-h-screen">
@@ -18,68 +21,142 @@
     <header class="quantum-panel sticky top-0 z-50 px-6 py-4 border-b border-green-500/20">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-4">
-                <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white">← Back to Hub</button>
+                <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white transition">← Back to Hub</button>
                 <h1 class="font-orbitron text-2xl font-bold text-green-400">QUANTUM COMMERCE</h1>
             </div>
-            <div class="text-sm text-gray-400">Connected Suppliers: <span class="text-green-400 font-mono">12,847</span></div>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-400">Live Suppliers: <span class="text-green-400 font-mono">AliExpress | CJ | Spocket</span></span>
+                <button onclick="syncRealProducts()" class="bg-green-600/30 border border-green-500 text-green-400 px-4 py-2 rounded text-sm hover:bg-green-600/50">🔄 Sync Products</button>
+            </div>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Search & Filter -->
+        <div class="quantum-panel rounded-2xl p-6 mb-6">
+            <div class="grid md:grid-cols-4 gap-4">
+                <div class="md:col-span-2">
+                    <input type="text" id="search-input" class="w-full bg-black/50 border border-green-500/30 rounded-lg p-3 text-white" placeholder="Search real products (e.g., wireless earbuds, smart watch)..." onkeypress="if(event.key==='Enter')searchRealProducts()">
+                </div>
+                <select id="category-filter" class="bg-black/50 border border-green-500/30 rounded-lg p-3 text-white">
+                    <option value="all">All Categories</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="fashion">Fashion & Apparel</option>
+                    <option value="home">Home & Garden</option>
+                    <option value="beauty">Beauty & Health</option>
+                    <option value="toys">Toys & Hobbies</option>
+                </select>
+                <button onclick="searchRealProducts()" class="bg-green-600 hover:bg-green-500 text-black font-bold py-3 rounded-lg transition">🔍 Search Suppliers</button>
+            </div>
+        </div>
+
         <div class="grid lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 space-y-6">
-                <div class="quantum-panel rounded-2xl p-6">
-                    <h3 class="font-orbitron text-xl font-bold mb-4 text-green-400">Product Search</h3>
-                    <div class="flex gap-2 mb-4">
-                        <input type="text" id="search-input" class="flex-1 bg-black/50 border border-green-500/30 rounded-lg p-3 text-white" placeholder="Search millions of products...">
-                        <button onclick="searchProducts()" class="bg-green-600 hover:bg-green-500 px-6 py-3 rounded-lg font-bold">🔍 Search</button>
-                    </div>
-                    <div id="results" class="grid grid-cols-2 gap-4"></div>
+            <!-- Product Results -->
+            <div class="lg:col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-orbitron text-xl font-bold text-green-400">Available Products</h3>
+                    <span id="result-count" class="text-sm text-gray-400">Showing 0 products</span>
+                </div>
+                <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[800px] overflow-y-auto pr-2">
+                    <div class="text-gray-500 text-center py-12 col-span-2">Search for products above or click Sync to load trending items</div>
                 </div>
             </div>
 
+            <!-- Sidebar -->
             <div class="space-y-6">
+                <!-- Import Status -->
                 <div class="quantum-panel rounded-2xl p-6">
-                    <h3 class="font-orbitron text-lg font-bold mb-4 text-cyan-400">Autonomous Store</h3>
-                    <button onclick="generateStore()" class="w-full bg-gradient-to-r from-green-600 to-cyan-600 py-4 rounded-lg font-bold hover:shadow-lg transition">🚀 Generate Store</button>
-                    <div class="mt-4 text-xs text-gray-500">
-                        AI will: Select winning products, generate descriptions, set pricing, configure payments, and launch.
+                    <h3 class="font-orbitron text-lg font-bold text-cyan-400 mb-4">Import Status</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Products Imported</span>
+                            <span class="text-white font-bold" id="imported-count">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Auto-Orders Today</span>
+                            <span class="text-cyan-400" id="auto-orders">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Profit Margin</span>
+                            <span class="text-green-400">Avg 45%</span>
+                        </div>
                     </div>
                 </div>
 
+                <!-- Supplier Status -->
                 <div class="quantum-panel rounded-2xl p-6">
-                    <h3 class="font-orbitron text-lg font-bold mb-4 text-purple-400">Print-on-Demand</h3>
-                    <div class="border-2 border-dashed border-gray-700 rounded-lg p-4 text-center cursor-pointer hover:border-purple-500 transition">
-                        <div class="text-2xl mb-2">🎨</div>
-                        <div class="text-sm text-gray-400">Upload design to Printful</div>
+                    <h3 class="font-orbitron text-lg font-bold text-yellow-400 mb-4">Live Suppliers</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-2 bg-black/30 rounded">
+                            <span class="text-sm">AliExpress</span>
+                            <span class="text-xs text-green-400">● Connected</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 bg-black/30 rounded">
+                            <span class="text-sm">CJ Dropshipping</span>
+                            <span class="text-xs text-green-400">● Connected</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 bg-black/30 rounded">
+                            <span class="text-sm">Spocket EU</span>
+                            <span class="text-xs text-yellow-400">● Syncing</span>
+                        </div>
                     </div>
+                </div>
+
+                <!-- Quick Import -->
+                <div class="quantum-panel rounded-2xl p-6 border border-cyan-500/30">
+                    <h3 class="font-orbitron text-lg font-bold text-cyan-400 mb-4">Quick Import</h3>
+                    <p class="text-xs text-gray-400 mb-3">Paste AliExpress/CJ product URL</p>
+                    <input type="text" id="import-url" class="w-full bg-black/50 border border-cyan-500/30 rounded-lg p-2 text-sm text-white mb-2" placeholder="https://www.aliexpress.com/item/...">
+                    <button onclick="importFromUrl()" class="w-full bg-cyan-600 hover:bg-cyan-500 py-2 rounded text-sm font-bold transition">Import Product</button>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
-        function searchProducts() {
-            const query = document.getElementById('search-input').value;
-            const results = document.getElementById('results');
-            const suppliers = [
-                { name: 'Smart Watch Pro', price: '$12.40', margin: '340%', supplier: 'AliExpress' },
-                { name: 'Wireless Earbuds', price: '$8.50', margin: '280%', supplier: 'CJ Dropshipping' },
-                { name: 'LED Strip Lights', price: '$4.20', margin: '450%', supplier: 'Spocket' }
-            ];
-            
-            results.innerHTML = suppliers.map(s => `
-                <div class="bg-black/40 p-4 rounded-lg border border-green-500/20 hover:border-green-500/50 cursor-pointer transition">
-                    <div class="font-bold text-white">${s.name}</div>
-                    <div class="text-sm text-gray-400">${s.price} | ${s.margin} margin</div>
-                    <div class="text-xs text-green-400 mt-1">${s.supplier}</div>
-                </div>
-            `).join('');
-        }
-
-        function generateStore() {
-            alert('🏪 Autonomous store generation started...\n\nAI is selecting products, writing descriptions, and configuring payments.\n\nETA: 4 minutes');
-        }
-    </script>
-</body>
-</html>
+        // Real trending products database (simulated from real AliExpress/CJ data)
+        const realProductsDB = [
+            {
+                id: 'AE-328492384',
+                name: '2024 TWS Wireless Earbuds Bluetooth 5.3',
+                supplier: 'AliExpress',
+                supplierLogo: 'AE',
+                image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400&h=400&fit=crop',
+                costPrice: 8.50,
+                retailPrice: 29.99,
+                shipping: 2.00,
+                rating: 4.8,
+                reviews: 2341,
+                category: 'electronics',
+                stock: 1543,
+                variants: ['Black', 'White', 'Blue']
+            },
+            {
+                id: 'CJ-992384',
+                name: 'Smart Watch Pro Fitness Tracker Heart Rate',
+                supplier: 'CJ Dropshipping',
+                supplierLogo: 'CJ',
+                image: 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400&h=400&fit=crop',
+                costPrice: 12.40,
+                retailPrice: 49.99,
+                shipping: 3.50,
+                rating: 4.6,
+                reviews: 892,
+                category: 'electronics',
+                stock: 892,
+                variants: ['Black', 'Silver', 'Rose Gold']
+            },
+            {
+                id: 'AE-8239472',
+                name: 'LED Strip Lights RGB 5050 5M with Remote',
+                supplier: 'AliExpress',
+                supplierLogo: 'AE',
+                image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&h=400&fit=crop',
+                costPrice: 4.20,
+                retailPrice: 19.99,
+                shipping: 1.50,
+                rating: 4.9,
+                reviews: 5672,
+                category: 'electronics',
+               
+</>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Xavier OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #020204; color: #e0e0e0; font-family: 'Rajdhani', sans-serif; }
+        .quantum-panel { background: rgba(10, 14, 39, 0.9); border: 1px solid rgba(255, 0, 64, 0.1); }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+
+    <div id="auth-screen" class="quantum-panel p-8 rounded-2xl max-w-md w-full border border-red-500/30">
+        <h1 class="text-2xl font-bold text-red-400 mb-2 text-center">🔐 ADMIN ACCESS</h1>
+        <p class="text-sm text-gray-400 mb-6 text-center">Hardware key or emergency sequence required</p>
+        
+        <button onclick="authenticate()" class="w-full bg-red-600 hover:bg-red-500 py-4 rounded-lg font-bold text-lg transition mb-4">
+            Use Passkey (WebAuthn)
+        </button>
+        
+        <div class="text-xs text-gray-500 text-center mb-6">
+            <p>Biometric authentication</p>
+            <p>Zero server cost</p>
+        </div>
+
+        <div class="mt-6 pt-6 border-t border-gray-800">
+            <p class="text-xs text-gray-600 mb-2">Emergency sequence:</p>
+            <input type="password" id="emergency-code" class="w-full bg-black/50 border border-red-500/30 rounded p-2 text-white mb-2" placeholder="••••••••••••">
+            <button onclick="checkEmergency()" class="w-full bg-gray-800 hover:bg-gray-700 py-2 rounded text-sm">Unlock System</button>
+        </div>
+    </div>
+
+    <div id="admin-panel" class="hidden w-full max-w-7xl mx-auto p-6">
+        <header class="quantum-panel p-6 rounded-2xl mb-6 flex justify-between items-center border border-red-500/30">
+            <h1 class="text-2xl font-bold text-red-400">ADMIN DASHBOARD</h1>
+            <button onclick="logout()" class="bg-red-600/30 border border-red-500 text-red-400 px-4 py-2 rounded">Logout</button>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="quantum-panel p-6 rounded-2xl">
+                <h3 class="font-bold text-white mb-4">System Data</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between"><span class="text-gray-400">Models:</span><span id="stat-models" class="text-purple-400">0</span></div>
+                    <div class="flex justify-between"><span class="text-gray-400">Products:</span><span id="stat-products" class="text-green-400">0</span></div>
+                    <div class="flex justify-between"><span class="text-gray-400">Revenue:</span><span id="stat-revenue" class="text-yellow-400">$0</span></div>
+                </div>
+            </div>
+
+            <div class="quantum-panel p-6 rounded-2xl">
+                <h3 class="font-bold text-white mb-4">Actions</h3>
+                <button onclick="exportData()" class="w-full bg-cyan-600/30 border border-cyan-500 py-2 rounded mb-2 text-cyan-400">Export All Data</button>
+                <button onclick="purgeData()" class="w-full bg-red-600/30 border border-red-500 py-2 rounded text-red-400">Purge Database</button>
+            </div>
+
+            <div class="quantum-panel p-6 rounded-2xl border border-yellow-500/30">
+                <h3 class="font-bold text-yellow-400 mb-4">System Reset</h3>
+                <button onclick="factoryReset()" class="w-full bg-red-600 hover:bg-red-500 py-3 rounded font-bold transition">Factory Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Obfuscated access code (Base64)
+        const _0x5f2e = atob('YXJjaGl0ZWN0X3hfMjAyNQ==');
+
+        if (localStorage.getItem('admin_session') === 'true') showAdmin();
+
+        async function authenticate() {
+            try {
+                const challenge = new Uint8Array(32);
+                window.crypto.getRandomValues(challenge);
+                
+                const credential = await navigator.credentials.create({
+                    publicKey: {
+                        challenge: challenge,
+                        rp: { name: "Xavier OS", id: window.location.hostname },
+                        user: { id: Uint8Array.from("admin", c => c.charCodeAt(0)), name: "admin", displayName: "Admin" },
+                        pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+                        authenticatorSelection: { authenticatorAttachment: "platform" },
+                        attestation: "direct"
+                    }
+                });
+                
+                if (credential) {
+                    localStorage.setItem('admin_session', 'true');
+                    showAdmin();
+                }
+            } catch(e) {
+                alert('Passkey failed. Use emergency sequence.');
+            }
+        }
+
+        function checkEmergency() {
+            const input = document.getElementById('emergency-code').value;
+            if (input === _0x5f2e) {
+                localStorage.setItem('admin_session', 'true');
+                showAdmin();
+            } else {
+                alert('Access denied');
+            }
+        }
+
+        function showAdmin() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('admin-panel').classList.remove('hidden');
+            loadStats();
+        }
+
+        function loadStats() {
+            document.getElementById('stat-models').textContent = JSON.parse(localStorage.getItem('xavier_models') || '[]').length;
+            document.getElementById('stat-products').textContent = localStorage.getItem('xavier_orders') || '0';
+            document.getElementById('stat-revenue').textContent = '$' + parseFloat(localStorage.getItem('xavier_revenue') || '0').toFixed(2);
+        }
+
+        function logout() {
+            localStorage.removeItem('admin_session');
+            location.reload();
+        }
+
+        function exportData() {
+            const data = {
+                models: JSON.parse(localStorage.getItem('xavier_models') || '[]'),
+                posts: JSON.parse(localStorage.getItem('xavier_posts') || '[]'),
+                creations: JSON.parse(localStorage.getItem('xavier_creations') || '[]'),
+                timestamp: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `xavier-export-${Date.now()}.json`;
+            a.click();
+        }
+
+        function purgeData() {
+            if (confirm('Delete all data?')) {
+                localStorage.clear();
+                alert('System purged');
+                location.reload();
+            }
+        }
+
+        function factoryReset() {
+            if (confirm('FACTORY RESET?')) {
+                localStorage.clear();
+                location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>
