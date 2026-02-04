@@ -1,19 +1,23 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketing AI | Xavier OS</title>
+    <title>Autonomous Marketing | Xavier OS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --quantum-blue: #00f0ff; --neural-purple: #b026ff; --void-black: #020204; }
+        :root { --void-black: #020204; }
         body { font-family: 'Rajdhani', sans-serif; background: var(--void-black); color: #e0e0e0; }
         .quantum-panel { background: rgba(10, 14, 39, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
-        .funnel-step { position: relative; padding-left: 2rem; border-left: 2px solid rgba(176, 38, 255, 0.3); }
-        .funnel-step::before { content: ''; position: absolute; left: -6px; top: 0; width: 10px; height: 10px; background: var(--neural-purple); border-radius: 50%; }
-        .loading-bar { height: 4px; background: linear-gradient(90deg, var(--neural-purple), var(--quantum-blue)); background-size: 200% 100%; animation: loading 2s infinite; }
+        .automation-active { animation: automationPulse 2s infinite; }
+        @keyframes automationPulse { 0%, 100% { box-shadow: 0 0 5px rgba(176, 38, 255, 0.5); } 50% { box-shadow: 0 0 20px rgba(176, 38, 255, 0.8); } }
+        .funnel-step { position: relative; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 12px; border-left: 3px solid #b026ff; margin-bottom: 12px; transition: all 0.3s; }
+        .funnel-step:hover { background: rgba(255,255,255,0.06); transform: translateX(5px); }
+        .funnel-step::before { content: '✓'; position: absolute; left: -12px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; background: #b026ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; }
+        .loading-bar { height: 4px; background: linear-gradient(90deg, #b026ff, #00f0ff); background-size: 200% 100%; animation: loading 2s infinite; border-radius: 2px; }
         @keyframes loading { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
     </style>
 </head>
@@ -23,101 +27,295 @@
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-4">
                 <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white">← Back to Hub</button>
-                <h1 class="font-orbitron text-2xl font-bold text-purple-400">AUTONOMOUS MARKETING</h1>
+                <h1 class="font-orbitron text-2xl font-bold text-purple-400 automation-active">AUTONOMOUS MARKETING</h1>
             </div>
-            <div class="text-sm text-gray-400">Today's Revenue: <span class="text-green-400 font-mono">$4,329</span></div>
+            <div class="flex items-center gap-4">
+                <div class="text-sm text-gray-400">Campaigns Active: <span class="text-purple-400 font-bold" id="active-campaigns">0</span></div>
+                <div class="text-sm text-gray-400">Revenue Today: <span class="text-green-400 font-bold" id="today-revenue">$0</span></div>
+            </div>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-6 py-8 grid lg:grid-cols-2 gap-8">
         
+        <!-- Left: Campaign Builder -->
         <div class="space-y-6">
-            <div class="quantum-panel rounded-2xl p-6">
-                <h3 class="font-orbitron text-xl font-bold mb-6 text-purple-400">Quantum Funnel Builder</h3>
+            <div class="quantum-panel rounded-2xl p-6 border border-purple-500/30">
+                <h3 class="font-orbitron text-xl font-bold mb-4 text-purple-400">Quantum Funnel Builder</h3>
+                <p class="text-xs text-gray-500 mb-6">World-First: Single-button deployment across all platforms with AI-optimized copy and creative</p>
                 
                 <div class="space-y-4 mb-6">
-                    <input type="url" id="product-url" class="w-full bg-black/50 border border-purple-500/30 rounded-lg p-3 text-white focus:border-purple-500 focus:outline-none" placeholder="Product or Affiliate URL">
-                    <select id="platform" class="w-full bg-black/50 border border-purple-500/30 rounded-lg p-3 text-white">
-                        <option>ClickBank</option>
-                        <option>JVZoo</option>
-                        <option>Amazon Associates</option>
-                        <option>Shopify</option>
-                    </select>
-                    <input type="text" id="audience" class="w-full bg-black/50 border border-purple-500/30 rounded-lg p-3 text-white" placeholder="Target audience (e.g., Entrepreneurs aged 25-45)">
-                    <input type="range" min="50" max="10000" value="500" class="w-full accent-purple-500" oninput="document.getElementById('budget-display').textContent = '$' + this.value">
-                    <div class="text-right text-purple-400 font-mono" id="budget-display">$500</div>
+                    <div>
+                        <label class="text-xs text-gray-400 block mb-2">Product URL or Description</label>
+                        <input type="text" id="product-input" class="w-full bg-black/50 border border-purple-500/30 rounded-lg p-3 text-white focus:border-purple-500 focus:outline-none" placeholder="https://yoursite.com/product or describe your offer...">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs text-gray-400 block mb-2">Platform</label>
+                            <select id="platform-select" class="w-full bg-black/50 border border-purple-500/30 rounded-lg p-3 text-white">
+                                <option value="all">All Platforms (Multi-Deploy)</option>
+                                <option value="facebook">Facebook Ads</option>
+                                <option value="google">Google Ads</option>
+                                <option value="tiktok">TikTok Ads</option>
+                                <option value="native">Native Ads (Taboola/Outbrain)</option>
+                                <option value="affiliate">Affiliate Network</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-400 block mb-2">Budget Strategy</label>
+                            <select id="budget-strategy" class="w-full bg-black/50 border border-purple-500/30 rounded-lg p-3 text-white">
+                                <option value="auto">AI Auto-Optimize</option>
+                                <option value="conservative">Conservative ($50/day)</option>
+                                <option value="aggressive">Aggressive ($500/day)</option>
+                                <option value="viral">Viral Mode ($2000/day)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-400 block mb-2">Target Persona (AI-Generated)</label>
+                        <div class="flex gap-2 flex-wrap" id="persona-tags">
+                            <span class="px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-xs text-purple-400 cursor-pointer hover:bg-purple-500/30">Entrepreneurs</span>
+                            <span class="px-3 py-1 bg-gray-800 border border-gray-700 rounded-full text-xs text-gray-400 cursor-pointer hover:bg-gray-700">Parents 25-45</span>
+                            <span class="px-3 py-1 bg-gray-800 border border-gray-700 rounded-full text-xs text-gray-400 cursor-pointer hover:bg-gray-700">Tech Enthusiasts</span>
+                            <span class="px-3 py-1 bg-gray-800 border border-gray-700 rounded-full text-xs text-gray-400 cursor-pointer hover:bg-gray-700">Fitness</span>
+                        </div>
+                    </div>
                 </div>
                 
-                <button onclick="generateFunnel()" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 py-4 rounded-lg font-bold text-lg hover:shadow-lg hover:shadow-purple-500/50 transition">🚀 INITIATE AUTONOMOUS BUILD</button>
+                <button onclick="deployAutonomousCampaign()" id="deploy-btn" class="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 py-4 rounded-lg font-bold text-lg hover:shadow-lg hover:shadow-purple-500/50 transition relative overflow-hidden group">
+                    <span class="relative z-10">🚀 INITIATE AUTONOMOUS DEPLOYMENT</span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                </button>
+                
+                <div class="mt-4 flex items-center gap-4 text-xs text-gray-500">
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 bg-green-500 rounded-full"></span> AI Copywriting</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 bg-green-500 rounded-full"></span> Creative Generation</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 bg-green-500 rounded-full"></span> Auto-Optimization</span>
+                </div>
+            </div>
+
+            <!-- Affiliate Platform -->
+            <div class="quantum-panel rounded-2xl p-6 border border-yellow-500/20">
+                <h3 class="font-orbitron text-lg font-bold text-yellow-400 mb-4">Affiliate Network Hub</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center p-3 bg-black/30 rounded-lg">
+                        <div>
+                            <div class="text-sm text-white">ClickBank Integration</div>
+                            <div class="text-xs text-gray-500">Auto-promote top offers</div>
+                        </div>
+                        <button onclick="syncAffiliate('clickbank')" class="bg-yellow-600/30 text-yellow-400 px-3 py-1 rounded text-xs border border-yellow-500/30 hover:bg-yellow-600/50">Sync</button>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-black/30 rounded-lg">
+                        <div>
+                            <div class="text-sm text-white">JVZoo Auto-Import</div>
+                            <div class="text-xs text-gray-500">High-converting products</div>
+                        </div>
+                        <button onclick="syncAffiliate('jvzoo')" class="bg-yellow-600/30 text-yellow-400 px-3 py-1 rounded text-xs border border-yellow-500/30 hover:bg-yellow-600/50">Sync</button>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-black/30 rounded-lg">
+                        <div>
+                            <div class="text-sm text-white">Amazon Associates</div>
+                            <div class="text-xs text-gray-500">Product recommendations</div>
+                        </div>
+                        <button onclick="syncAffiliate('amazon')" class="bg-yellow-600/30 text-yellow-400 px-3 py-1 rounded text-xs border border-yellow-500/30 hover:bg-yellow-600/50">Sync</button>
+                    </div>
+                </div>
             </div>
         </div>
 
+        <!-- Right: Status & Analytics -->
         <div class="space-y-6">
             <div id="generation-status" class="hidden quantum-panel rounded-2xl p-6 border-2 border-purple-500/50">
-                <h3 class="font-orbitron text-lg font-bold mb-4 text-purple-400">AI Generation in Progress</h3>
-                <div id="progress-steps" class="space-y-4"></div>
-                <div class="mt-4 loading-bar rounded-full"></div>
+                <h3 class="font-orbitron text-lg font-bold mb-4 text-purple-400 flex items-center gap-2">
+                    <span class="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
+                    Autonomous Generation in Progress
+                </h3>
+                <div id="progress-steps" class="space-y-3 mb-4"></div>
+                <div class="loading-bar rounded-full"></div>
+                <div class="mt-4 text-xs text-gray-500 font-mono" id="ai-log">> Initializing quantum neural networks...</div>
             </div>
 
-            <div id="funnel-preview" class="hidden quantum-panel rounded-2xl p-6">
-                <h3 class="font-orbitron text-lg font-bold mb-4 text-green-400">✓ Funnel Deployed</h3>
-                <div class="space-y-4 mb-6">
-                    <div class="funnel-step pb-4">
-                        <div class="font-bold text-cyan-400">Landing Page</div>
-                        <div class="text-sm text-gray-400">High-converting headline + video sales letter</div>
+            <div id="campaign-preview" class="hidden quantum-panel rounded-2xl p-6">
+                <h3 class="font-orbitron text-lg font-bold mb-4 text-green-400 flex items-center gap-2">
+                    <span>✓</span> Campaign Deployed Successfully
+                </h3>
+                
+                <div class="space-y-3 mb-6" id="funnel-visualization">
+                    <!-- Funnel steps injected here -->
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-black/30 p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-cyan-400" id="projected-roi">0%</div>
+                        <div class="text-xs text-gray-500">Projected ROI</div>
                     </div>
-                    <div class="funnel-step pb-4">
-                        <div class="font-bold text-purple-400">Email Sequence</div>
-                        <div class="text-sm text-gray-400">7-day automated follow-up series</div>
-                    </div>
-                    <div class="funnel-step pb-4">
-                        <div class="font-bold text-yellow-400">Ad Creatives</div>
-                        <div class="text-sm text-gray-400">12 variants for Facebook, Google, TikTok</div>
-                    </div>
-                    <div class="funnel-step">
-                        <div class="font-bold text-green-400">Traffic Automation</div>
-                        <div class="text-sm text-gray-400">AI-managed ad spend</div>
+                    <div class="bg-black/30 p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-purple-400" id="reach-estimate">0</div>
+                        <div class="text-xs text-gray-500">Est. Reach (24h)</div>
                     </div>
                 </div>
+
                 <div class="flex gap-3">
-                    <button onclick="alert('Funnel URL copied!')" class="flex-1 bg-cyan-600 hover:bg-cyan-500 py-3 rounded font-bold transition">Copy URL</button>
-                    <button onclick="alert('Campaign launching...')" class="flex-1 bg-green-600 hover:bg-green-500 py-3 rounded font-bold transition">Launch</button>
+                    <button onclick="viewCampaign()" class="flex-1 bg-cyan-600 hover:bg-cyan-500 py-3 rounded-lg font-bold transition">View Dashboard</button>
+                    <button onclick="optimizeCampaign()" class="flex-1 bg-purple-600 hover:bg-purple-500 py-3 rounded-lg font-bold transition">AI Optimize</button>
+                </div>
+            </div>
+
+            <!-- Active Campaigns List -->
+            <div class="quantum-panel rounded-2xl p-6">
+                <h3 class="font-orbitron text-lg font-bold mb-4 text-white">Active Campaigns</h3>
+                <div id="campaigns-list" class="space-y-3">
+                    <div class="text-gray-500 text-center py-8 text-sm">No active campaigns. Deploy one above.</div>
                 </div>
             </div>
         </div>
     </main>
 
     <script>
-        function generateFunnel() {
-            if (!document.getElementById('product-url').value) return alert('Enter product URL');
+        let campaigns = JSON.parse(localStorage.getItem('xavier_campaigns') || '[]');
+        let currentCampaign = null;
+
+        function deployAutonomousCampaign() {
+            const product = document.getElementById('product-input').value;
+            const platform = document.getElementById('platform-select').value;
+            const budget = document.getElementById('budget-strategy').value;
             
+            if (!product) {
+                alert('Enter a product URL or description');
+                return;
+            }
+
             const status = document.getElementById('generation-status');
             const steps = document.getElementById('progress-steps');
-            const preview = document.getElementById('funnel-preview');
+            const preview = document.getElementById('campaign-preview');
+            const aiLog = document.getElementById('ai-log');
             
             status.classList.remove('hidden');
             preview.classList.add('hidden');
+            steps.innerHTML = '';
             
             const generationSteps = [
-                'Scraping product page...', 'Analyzing competitors...', 'Writing copy...', 
-                'Generating creatives...', 'Setting up emails...', 'Configuring ads...', 'Optimizing...', 'Deploying...'
+                {msg: 'Analyzing product/market fit...', icon: '🧠'},
+                {msg: 'Scraping competitor funnels...', icon: '🔍'},
+                {msg: 'Generating high-converting copy...', icon: '✍️'},
+                {msg: 'Creating AI image variations...', icon: '🎨'},
+                {msg: 'Building landing page...', icon: '⚡'},
+                {msg: 'Setting up email sequences...', icon: '📧'},
+                {msg: 'Configuring ad accounts...', icon: '🔧'},
+                {msg: 'Launching split tests...', icon: '🚀'},
+                {msg: 'Activating auto-optimization...', icon: '🤖'}
             ];
             
             let i = 0;
             const interval = setInterval(() => {
                 if (i < generationSteps.length) {
-                    steps.innerHTML += `<div class="flex items-center gap-3 text-sm"><span class="text-purple-400">⚡</span><span>${generationSteps[i]}</span></div>`;
+                    steps.innerHTML += `
+                        <div class="flex items-center gap-3 text-sm animate-pulse">
+                            <span>${generationSteps[i].icon}</span>
+                            <span class="text-gray-300">${generationSteps[i].msg}</span>
+                        </div>
+                    `;
+                    aiLog.textContent = `> ${generationSteps[i].msg} [OK]`;
+                    steps.scrollTop = steps.scrollHeight;
                     i++;
                 } else {
                     clearInterval(interval);
                     setTimeout(() => {
-                        status.classList.add('hidden');
-                        preview.classList.remove('hidden');
-                        steps.innerHTML = '';
-                    }, 500);
+                        finishDeployment(product, platform, budget);
+                    }, 1000);
                 }
             }, 800);
         }
+
+        function finishDeployment(product, platform, budget) {
+            document.getElementById('generation-status').classList.add('hidden');
+            document.getElementById('campaign-preview').classList.remove('hidden');
+            
+            const campaignId = 'CAMP-' + Date.now();
+            const funnelSteps = [
+                {name: 'Landing Page', desc: 'AI-generated high-converting page', color: 'cyan'},
+                {name: 'Lead Magnet', desc: 'Auto-created value proposition', color: 'purple'},
+                {name: 'Email Sequence', desc: '7-day nurture campaign', color: 'yellow'},
+                {name: 'Retargeting Ads', desc: 'Dynamic creative optimization', color: 'pink'},
+                {name: 'Sales Page', desc: 'Persuasion-optimized layout', color: 'green'}
+            ];
+            
+            document.getElementById('funnel-visualization').innerHTML = funnelSteps.map((step, idx) => `
+                <div class="funnel-step" style="border-left-color: var(--${step.color}-500, #b026ff); animation-delay: ${idx * 0.1}s">
+                    <div class="font-bold text-${step.color}-400 text-sm">${step.name}</div>
+                    <div class="text-xs text-gray-500">${step.desc}</div>
+                </div>
+            `).join('');
+            
+            const roi = Math.floor(Math.random() * 300) + 150;
+            const reach = (Math.floor(Math.random() * 50) + 10) + 'K';
+            
+            document.getElementById('projected-roi').textContent = roi + '%';
+            document.getElementById('reach-estimate').textContent = reach;
+            
+            // Save campaign
+            const campaign = {
+                id: campaignId,
+                product: product.substring(0, 30) + '...',
+                platform: platform,
+                budget: budget,
+                roi: roi,
+                status: 'Active',
+                created: new Date().toLocaleTimeString()
+            };
+            
+            campaigns.unshift(campaign);
+            localStorage.setItem('xavier_campaigns', JSON.stringify(campaigns));
+            updateCampaignsList();
+            
+            // Update header stats
+            document.getElementById('active-campaigns').textContent = campaigns.filter(c => c.status === 'Active').length;
+            document.getElementById('today-revenue').textContent = '$' + (campaigns.length * 423).toLocaleString();
+        }
+
+        function updateCampaignsList() {
+            const list = document.getElementById('campaigns-list');
+            if (campaigns.length === 0) {
+                list.innerHTML = '<div class="text-gray-500 text-center py-8 text-sm">No active campaigns. Deploy one above.</div>';
+                return;
+            }
+            
+            list.innerHTML = campaigns.map(c => `
+                <div class="bg-black/30 rounded-lg p-4 border border-gray-800 hover:border-purple-500/30 transition">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <div class="text-sm font-bold text-white">${c.product}</div>
+                            <div class="text-xs text-gray-500">${c.platform} • ${c.budget}</div>
+                        </div>
+                        <span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded border border-green-500/30">${c.status}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-gray-500">ROI: <span class="text-green-400 font-bold">${c.roi}%</span></span>
+                        <span class="text-gray-600">${c.created}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function syncAffiliate(network) {
+            alert(`🔄 Syncing with ${network.toUpperCase()}...\n\n✅ Top 10 offers imported\n✅ Commission rates analyzed\n✅ Auto-promotion sequences created\n\nReady to deploy.`);
+        }
+
+        function optimizeCampaign() {
+            alert('🤖 AI Optimization Active\n\n• Adjusting bid prices\n• Refreshing ad creative\n• A/B testing new headlines\n• Expanding to lookalike audiences\n\nChanges applied automatically.');
+        }
+
+        function viewCampaign() {
+            alert('📊 Opening real-time dashboard...\n\nShowing live metrics:\n- CTR: 4.2% (Above average)\n- CPC: $0.34 (Optimized)\n- Conversions: 23 today\n- Revenue: $1,247');
+        }
+
+        // Initialize
+        updateCampaignsList();
+        document.getElementById('active-campaigns').textContent = campaigns.filter(c => c.status === 'Active').length;
     </script>
+    
+    <script src="guard.js"></script>
 </body>
 </html>
