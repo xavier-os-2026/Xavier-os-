@@ -1,123 +1,201 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neural Studio | Xavier OS</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
-    <style>
-        body { background: #020204; color: #e0e0e0; font-family: 'Rajdhani', sans-serif; }
-        .quantum-panel { background: rgba(10, 14, 39, 0.9); border: 1px solid rgba(255, 193, 7, 0.1); }
-    </style>
-</head>
-<body class="min-h-screen">
 
-    <header class="quantum-panel sticky top-0 z-40 px-6 py-4 border-b border-yellow-500/20">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <button onclick="location.href='index.html'" class="text-gray-400 hover:text-white">← Hub</button>
-                <h1 class="font-orbitron text-2xl font-bold text-yellow-400">NEURAL STUDIO</h1>
-            </div>
-        </div>
-    </header>
 
-    <main class="max-w-7xl mx-auto px-6 py-8">
-        <div class="grid lg:grid-cols-3 gap-6">
-            <!-- Image Generation -->
-            <div class="quantum-panel rounded-2xl p-6">
-                <h3 class="font-orbitron text-lg font-bold text-yellow-400 mb-4">Text to Image (Free)</h3>
-                <textarea id="img-prompt" class="w-full h-32 bg-black/50 border border-yellow-500/30 rounded-lg p-3 text-white mb-3" placeholder="Cyberpunk city at night, neon lights, rain, 8k, photorealistic..."></textarea>
-                <select id="img-style" class="w-full bg-black/50 border border-yellow-500/30 rounded-lg p-2 text-sm text-gray-300 mb-3">
-                    <option>Photorealistic</option>
-                    <option>Cyberpunk</option>
-                    <option>Abstract</option>
-                    <option>Product Photo</option>
-                </select>
-                <button onclick="generateImage()" class="w-full bg-yellow-600 hover:bg-yellow-500 py-3 rounded-lg font-bold transition">Generate 4K Image</button>
-            </div>
+(function() {
+    'use strict';
 
-            <!-- Video Generation -->
-            <div class="quantum-panel rounded-2xl p-6">
-                <h3 class="font-orbitron text-lg font-bold text-cyan-400 mb-4">Text to Video (Free)</h3>
-                <textarea id="vid-prompt" class="w-full h-32 bg-black/50 border border-cyan-500/30 rounded-lg p-3 text-white mb-3" placeholder="Cinematic drone shot, futuristic city, sunset..."></textarea>
-                <select id="vid-duration" class="w-full bg-black/50 border border-cyan-500/30 rounded-lg p-2 text-sm text-gray-300 mb-3">
-                    <option value="5">5 seconds</option>
-                    <option value="10">10 seconds</option>
-                </select>
-                <button onclick="generateVideo()" class="w-full bg-cyan-600 hover:bg-cyan-500 py-3 rounded-lg font-bold transition">Generate Video</button>
-                <p class="text-xs text-gray-500 mt-2">* Uses free tier Runway or Stable Video Diffusion</p>
-            </div>
+    // Configuration
+    const CONFIG = {
+        SESSION_KEY: 'xavier_quantum_session',
+        ADMIN_KEY: 'xavier_admin_session',
+        ACCESS_CODE_HASH: 'YXJjaGl0ZWN0X3hfMjAyNQ==', // architect_x_2025 base64
+        REDIRECT_DELAY: 0, // No auto-redirect - user must manually navigate
+        PROTECTED_ROUTES: ['admin.html', 'holoworld.html', 'dropship.html', 'marketing.html'],
+        PUBLIC_ROUTES: ['index.html', 'pricing.html', 'settings.html']
+    };
 
-            <!-- Gallery -->
-            <div class="quantum-panel rounded-2xl p-6 lg:col-span-3">
-                <h3 class="font-orbitron text-lg font-bold text-white mb-4">Creations</h3>
-                <div id="creations" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    <div class="text-gray-500 text-center col-span-full py-8">Generate content above (All Free)</div>
+    // Quantum Encryption Helper
+    const QuantumCrypt = {
+        encode: (str) => btoa(str),
+        decode: (str) => atob(str),
+        hash: (str) => {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString(16);
+        }
+    };
+
+    // Session Manager
+    const SessionManager = {
+        isAuthenticated: () => {
+            return localStorage.getItem(CONFIG.SESSION_KEY) === 'authenticated' ||
+                   localStorage.getItem(CONFIG.ADMIN_KEY) === 'true';
+        },
+
+        isAdmin: () => {
+            return localStorage.getItem(CONFIG.ADMIN_KEY) === 'true';
+        },
+
+        validateAccess: (requiredLevel = 'user') => {
+            if (requiredLevel === 'admin' && !SessionManager.isAdmin()) {
+                return false;
+            }
+            return SessionManager.isAuthenticated();
+        },
+
+        // Check if user has Pro/Unlimited access
+        hasProAccess: () => {
+            const tier = localStorage.getItem('xavier_access_tier');
+            return tier === 'pro' || tier === 'unlimited' || tier === 'architect' || 
+                   localStorage.getItem(CONFIG.ADMIN_KEY) === 'true';
+        }
+    };
+
+    // Route Guard - Blocks access to protected pages but NO AUTO-REDIRECT to HoloWorld
+    const RouteGuard = {
+        currentPage: () => {
+            const path = window.location.pathname;
+            return path.substring(path.lastIndexOf('/') + 1) || 'index.html';
+        },
+
+        protect: () => {
+            const current = RouteGuard.currentPage();
+            const isProtected = CONFIG.PROTECTED_ROUTES.some(route => current.includes(route));
+
+            if (isProtected && !SessionManager.isAuthenticated()) {
+                // Show locked overlay instead of redirecting away
+                RouteGuard.showLockScreen();
+                return false;
+            }
+
+            // Special check for HoloWorld - requires Pro access
+            if (current.includes('holoworld') && !SessionManager.hasProAccess()) {
+                RouteGuard.showUpgradeScreen();
+                return false;
+            }
+
+            return true;
+        },
+
+        showLockScreen: () => {
+            const overlay = document.createElement('div');
+            overlay.id = 'quantum-lock';
+            overlay.innerHTML = `
+                <div style="position: fixed; inset: 0; background: rgba(2,2,4,0.95); z-index: 9999; 
+                           display: flex; flex-direction: column; align-items: center; justify-content: center; 
+                           font-family: 'Orbitron', sans-serif;">
+                    <div style="width: 64px; height: 64px; border: 3px solid rgba(0,240,255,0.3); 
+                               border-top: 3px solid #00f0ff; border-radius: 50%; 
+                               animation: spin 1s linear infinite; margin-bottom: 24px;"></div>
+                    <h2 style="color: #00f0ff; font-size: 24px; margin-bottom: 16px;">QUANTUM LOCK</h2>
+                    <p style="color: #666; margin-bottom: 24px;">Authentication Required</p>
+                    <button onclick="window.location.href='index.html'" 
+                            style="padding: 12px 32px; background: transparent; border: 1px solid #00f0ff; 
+                                   color: #00f0ff; cursor: pointer; font-family: 'Rajdhani', sans-serif;
+                                   font-weight: bold; transition: all 0.3s;"
+                            onmouseover="this.style.background='#00f0ff'; this.style.color='#020204';"
+                            onmouseout="this.style.background='transparent'; this.style.color='#00f0ff';">
+                        RETURN TO HUB
+                    </button>
+                    <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
                 </div>
-            </div>
-        </div>
-    </main>
+            `;
+            document.body.appendChild(overlay);
+            document.body.style.overflow = 'hidden';
+        },
 
-    <script>
-        let creations = JSON.parse(localStorage.getItem('xavier_creations') || '[]');
-        renderCreations();
-
-        function generateImage() {
-            const prompt = document.getElementById('img-prompt').value;
-            const style = document.getElementById('img-style').value;
-            if (!prompt) return alert('Enter prompt');
-            
-            // Zero cost: Pollinations.ai
-            const enhanced = `${prompt}, ${style}, 8k, highly detailed, professional photography`;
-            const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(enhanced)}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
-            
-            saveCreation('image', url, prompt);
-            alert('Image generated! Check gallery below.');
-            renderCreations();
+        showUpgradeScreen: () => {
+            const overlay = document.createElement('div');
+            overlay.innerHTML = `
+                <div style="position: fixed; inset: 0; background: rgba(2,2,4,0.95); z-index: 9999; 
+                           display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <h2 style="color: #b026ff; font-size: 28px; font-family: 'Orbitron', sans-serif; margin-bottom: 16px;">
+                        HOLOVERSE ACCESS
+                    </h2>
+                    <p style="color: #888; margin-bottom: 24px; font-family: 'Rajdhani', sans-serif;">
+                        Pro tier or higher required for HoloWorld entry
+                    </p>
+                    <div style="display: flex; gap: 16px;">
+                        <button onclick="window.location.href='pricing.html'" 
+                                style="padding: 12px 24px; background: #b026ff; border: none; color: white; 
+                                       cursor: pointer; font-weight: bold;">
+                            UPGRADE ACCESS
+                        </button>
+                        <button onclick="window.location.href='index.html'" 
+                                style="padding: 12px 24px; background: transparent; border: 1px solid #666; 
+                                       color: #666; cursor: pointer;">
+                            BACK TO HUB
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
         }
+    };
 
-        function generateVideo() {
-            const prompt = document.getElementById('vid-prompt').value;
-            if (!prompt) return alert('Enter prompt');
-            
-            // For free video, we use Runway Gen-2 free tier or show placeholder
-            // In production: integrate Runway API (free credits monthly)
-            alert('Video generation queued!\n\nIn production: This uses Runway ML free tier (125s free monthly) or Stable Video Diffusion.\n\nFor zero cost demo, using animated image...');
-            
-            // Fallback to animated image (zero cost)
-            const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt + ', cinematic motion blur')}?width=1024&height=576&nologo=true&seed=${Date.now()}`;
-            saveCreation('video', url, prompt);
-            renderCreations();
-        }
+    // Hidden Access Protocol (Architect Code)
+    const HiddenAccess = {
+        init: () => {
+            let sequence = [];
+            const code = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65]; // Konami code variant
 
-        function saveCreation(type, url, prompt) {
-            creations.unshift({
-                type, url, prompt,
-                date: new Date().toLocaleString(),
-                id: Date.now()
+            document.addEventListener('keydown', (e) => {
+                sequence.push(e.keyCode);
+                if (sequence.length > code.length) sequence.shift();
+
+                if (JSON.stringify(sequence) === JSON.stringify(code)) {
+                    HiddenAccess.activateArchitectMode();
+                }
             });
-            localStorage.setItem('xavier_creations', JSON.stringify(creations));
-        }
 
-        function renderCreations() {
-            const grid = document.getElementById('creations');
-            if (creations.length === 0) return;
-            
-            grid.innerHTML = creations.map(c => `
-                <div class="aspect-video rounded-lg overflow-hidden border border-gray-700 relative group bg-gray-900">
-                    <img src="${c.url}" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
-                        <a href="${c.url}" download class="bg-yellow-600 px-3 py-1 rounded text-xs">Download</a>
-                    </div>
-                    <div class="absolute bottom-0 left-0 right-0 bg-black/70 p-1 text-[10px] text-gray-400 truncate">
-                        ${c.type === 'video' ? '🎬' : '🖼️'} ${c.prompt.substring(0, 20)}...
-                    </div>
-                </div>
-            `).join('');
+            // Mobile: Triple tap logo
+            let tapCount = 0;
+            const logo = document.querySelector('[onclick*="index.html"]');
+            if (logo) {
+                logo.addEventListener('click', (e) => {
+                    tapCount++;
+                    if (tapCount === 3) {
+                        e.preventDefault();
+                        HiddenAccess.promptArchitectCode();
+                    }
+                    setTimeout(() => tapCount = 0, 1000);
+                });
+            }
+        },
+
+        promptArchitectCode: () => {
+            const input = prompt('🔐 Enter Architect Sequence:');
+            if (input && btoa(input) === CONFIG.ACCESS_CODE_HASH) {
+                HiddenAccess.activateArchitectMode();
+            }
+        },
+
+        activateArchitectMode: () => {
+            localStorage.setItem(CONFIG.ADMIN_KEY, 'true');
+            localStorage.setItem('xavier_access_tier', 'architect');
+            alert('🔓 ARCHITECT MODE ACTIVATED\nUnlimited access granted.');
+            window.location.reload();
         }
-    </script>
-    
-    <script src="guard.js"></script>
-</body>
-</html>
+    };
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', () => {
+        RouteGuard.protect();
+        HiddenAccess.init();
+
+        // Expose global auth check (but NO auto-redirect to HoloWorld)
+        window.XavierAuth = {
+            check: SessionManager.validateAccess,
+            isPro: SessionManager.hasProAccess,
+            logout: () => {
+                localStorage.removeItem(CONFIG.SESSION_KEY);
+                localStorage.removeItem(CONFIG.ADMIN_KEY);
+                window.location.href = 'index.html';
+            }
+        };
+    });
+
+})();
