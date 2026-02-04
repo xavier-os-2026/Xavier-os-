@@ -12,8 +12,6 @@
         .quantum-panel { background: rgba(10, 14, 39, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); }
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
         .product-image { height: 200px; object-fit: cover; width: 100%; border-radius: 8px; }
-        .price-tag { background: linear-gradient(135deg, #00c853, #00e676); color: black; font-weight: bold; }
-        .profit-tag { background: rgba(0, 200, 83, 0.2); color: #00e676; border: 1px solid #00c853; }
     </style>
 </head>
 <body class="min-h-screen">
@@ -25,138 +23,286 @@
                 <h1 class="font-orbitron text-2xl font-bold text-green-400">QUANTUM COMMERCE</h1>
             </div>
             <div class="flex items-center gap-4">
-                <span class="text-sm text-gray-400">Live Suppliers: <span class="text-green-400 font-mono">AliExpress | CJ | Spocket</span></span>
-                <button onclick="syncRealProducts()" class="bg-green-600/30 border border-green-500 text-green-400 px-4 py-2 rounded text-sm hover:bg-green-600/50">🔄 Sync Products</button>
+                <span class="text-sm text-gray-400" id="supplier-status">Ready to Import</span>
+                <button onclick="toggleApiConfig()" class="bg-green-600/30 border border-green-500 text-green-400 px-4 py-2 rounded text-sm hover:bg-green-600/50">⚙️ API Config</button>
             </div>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-6 py-8">
-        <!-- Search & Filter -->
-        <div class="quantum-panel rounded-2xl p-6 mb-6">
-            <div class="grid md:grid-cols-4 gap-4">
-                <div class="md:col-span-2">
-                    <input type="text" id="search-input" class="w-full bg-black/50 border border-green-500/30 rounded-lg p-3 text-white" placeholder="Search real products (e.g., wireless earbuds, smart watch)..." onkeypress="if(event.key==='Enter')searchRealProducts()">
+        
+        <!-- API Configuration Panel (Hidden by default) -->
+        <div id="api-config" class="hidden quantum-panel rounded-2xl p-6 mb-6 border border-yellow-500/30">
+            <h3 class="font-orbitron text-lg font-bold text-yellow-400 mb-4">Supplier API Configuration</h3>
+            <div class="grid md:grid-cols-2 gap-4 text-sm">
+                <div>
+                    <label class="text-gray-400 block mb-1">AliExpress API Key</label>
+                    <input type="text" id="ali-key" class="w-full bg-black/50 border border-green-500/30 rounded p-2 text-white" placeholder="Enter API key...">
                 </div>
-                <select id="category-filter" class="bg-black/50 border border-green-500/30 rounded-lg p-3 text-white">
-                    <option value="all">All Categories</option>
-                    <option value="electronics">Electronics</option>
-                    <option value="fashion">Fashion & Apparel</option>
-                    <option value="home">Home & Garden</option>
-                    <option value="beauty">Beauty & Health</option>
-                    <option value="toys">Toys & Hobbies</option>
-                </select>
-                <button onclick="searchRealProducts()" class="bg-green-600 hover:bg-green-500 text-black font-bold py-3 rounded-lg transition">🔍 Search Suppliers</button>
+                <div>
+                    <label class="text-gray-400 block mb-1">CJ Dropshipping API Key</label>
+                    <input type="text" id="cj-key" class="w-full bg-black/50 border border-green-500/30 rounded p-2 text-white" placeholder="Enter API key...">
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">* API keys stored locally in your browser only</p>
+        </div>
+
+        <!-- Import Methods -->
+        <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <!-- Method 1: URL Import -->
+            <div class="quantum-panel rounded-2xl p-6">
+                <h3 class="font-orbitron text-lg font-bold text-cyan-400 mb-4">Import by URL</h3>
+                <p class="text-xs text-gray-400 mb-3">Paste product URL from AliExpress, CJ, or any supplier</p>
+                <input type="text" id="import-url" class="w-full bg-black/50 border border-cyan-500/30 rounded-lg p-3 text-white mb-3" placeholder="https://www.aliexpress.com/item/...">
+                <input type="text" id="import-name" class="w-full bg-black/50 border border-cyan-500/30 rounded-lg p-3 text-white mb-3" placeholder="Product Name">
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    <input type="number" id="import-cost" class="bg-black/50 border border-cyan-500/30 rounded-lg p-3 text-white" placeholder="Cost ($)">
+                    <input type="number" id="import-price" class="bg-black/50 border border-cyan-500/30 rounded-lg p-3 text-white" placeholder="Sell Price ($)">
+                </div>
+                <button onclick="importProduct()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-black font-bold py-3 rounded-lg transition">Import Product</button>
+            </div>
+
+            <!-- Method 2: Manual Entry -->
+            <div class="quantum-panel rounded-2xl p-6">
+                <h3 class="font-orbitron text-lg font-bold text-purple-400 mb-4">Add Custom Product</h3>
+                <p class="text-xs text-gray-400 mb-3">Create your own listing manually</p>
+                <input type="text" id="custom-name" class="w-full bg-black/50 border border-purple-500/30 rounded-lg p-3 text-white mb-3" placeholder="Product Name">
+                <input type="text" id="custom-image" class="w-full bg-black/50 border border-purple-500/30 rounded-lg p-3 text-white mb-3" placeholder="Image URL (or leave blank for placeholder)">
+                <div class="grid grid-cols-3 gap-2 mb-3">
+                    <input type="number" id="custom-cost" class="bg-black/50 border border-purple-500/30 rounded-lg p-3 text-white" placeholder="Cost">
+                    <input type="number" id="custom-price" class="bg-black/50 border border-purple-500/30 rounded-lg p-3 text-white" placeholder="Price">
+                    <input type="text" id="custom-supplier" class="bg-black/50 border border-purple-500/30 rounded-lg p-3 text-white" placeholder="Supplier">
+                </div>
+                <button onclick="addCustomProduct()" class="w-full bg-purple-600 hover:bg-purple-500 text-black font-bold py-3 rounded-lg transition">Add Product</button>
             </div>
         </div>
 
-        <div class="grid lg:grid-cols-3 gap-6">
-            <!-- Product Results -->
-            <div class="lg:col-span-2">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-orbitron text-xl font-bold text-green-400">Available Products</h3>
-                    <span id="result-count" class="text-sm text-gray-400">Showing 0 products</span>
-                </div>
-                <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[800px] overflow-y-auto pr-2">
-                    <div class="text-gray-500 text-center py-12 col-span-2">Search for products above or click Sync to load trending items</div>
+        <!-- Search Your Inventory -->
+        <div class="quantum-panel rounded-2xl p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-orbitron text-xl font-bold text-green-400">Your Product Catalog</h3>
+                <span id="product-count" class="text-sm text-gray-400">0 products</span>
+            </div>
+            <input type="text" id="search-inventory" class="w-full bg-black/50 border border-green-500/30 rounded-lg p-3 text-white mb-4" placeholder="Search your imported products..." onkeyup="searchInventory()">
+            
+            <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="text-gray-500 text-center py-12 col-span-full">
+                    <p class="text-lg mb-2">No products yet</p>
+                    <p class="text-sm">Import your first product using the forms above</p>
                 </div>
             </div>
+        </div>
 
-            <!-- Sidebar -->
-            <div class="space-y-6">
-                <!-- Import Status -->
-                <div class="quantum-panel rounded-2xl p-6">
-                    <h3 class="font-orbitron text-lg font-bold text-cyan-400 mb-4">Import Status</h3>
-                    <div class="space-y-3 text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">Products Imported</span>
-                            <span class="text-white font-bold" id="imported-count">0</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">Auto-Orders Today</span>
-                            <span class="text-cyan-400" id="auto-orders">0</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">Profit Margin</span>
-                            <span class="text-green-400">Avg 45%</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Supplier Status -->
-                <div class="quantum-panel rounded-2xl p-6">
-                    <h3 class="font-orbitron text-lg font-bold text-yellow-400 mb-4">Live Suppliers</h3>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between p-2 bg-black/30 rounded">
-                            <span class="text-sm">AliExpress</span>
-                            <span class="text-xs text-green-400">● Connected</span>
-                        </div>
-                        <div class="flex items-center justify-between p-2 bg-black/30 rounded">
-                            <span class="text-sm">CJ Dropshipping</span>
-                            <span class="text-xs text-green-400">● Connected</span>
-                        </div>
-                        <div class="flex items-center justify-between p-2 bg-black/30 rounded">
-                            <span class="text-sm">Spocket EU</span>
-                            <span class="text-xs text-yellow-400">● Syncing</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Import -->
-                <div class="quantum-panel rounded-2xl p-6 border border-cyan-500/30">
-                    <h3 class="font-orbitron text-lg font-bold text-cyan-400 mb-4">Quick Import</h3>
-                    <p class="text-xs text-gray-400 mb-3">Paste AliExpress/CJ product URL</p>
-                    <input type="text" id="import-url" class="w-full bg-black/50 border border-cyan-500/30 rounded-lg p-2 text-sm text-white mb-2" placeholder="https://www.aliexpress.com/item/...">
-                    <button onclick="importFromUrl()" class="w-full bg-cyan-600 hover:bg-cyan-500 py-2 rounded text-sm font-bold transition">Import Product</button>
-                </div>
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="quantum-panel rounded-xl p-4 text-center">
+                <div class="text-2xl font-bold text-cyan-400" id="total-products">0</div>
+                <div class="text-xs text-gray-400">Total Products</div>
+            </div>
+            <div class="quantum-panel rounded-xl p-4 text-center">
+                <div class="text-2xl font-bold text-green-400" id="avg-margin">0%</div>
+                <div class="text-xs text-gray-400">Avg Margin</div>
+            </div>
+            <div class="quantum-panel rounded-xl p-4 text-center">
+                <div class="text-2xl font-bold text-yellow-400" id="total-value">$0</div>
+                <div class="text-xs text-gray-400">Inventory Value</div>
+            </div>
+            <div class="quantum-panel rounded-xl p-4 text-center">
+                <div class="text-2xl font-bold text-purple-400" id="potential-profit">$0</div>
+                <div class="text-xs text-gray-400">Potential Profit</div>
             </div>
         </div>
     </main>
 
     <script>
-        // Real trending products database (simulated from real AliExpress/CJ data)
-        const realProductsDB = [
-            {
-                id: 'AE-328492384',
-                name: '2024 TWS Wireless Earbuds Bluetooth 5.3',
-                supplier: 'AliExpress',
-                supplierLogo: 'AE',
-                image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400&h=400&fit=crop',
-                costPrice: 8.50,
-                retailPrice: 29.99,
-                shipping: 2.00,
-                rating: 4.8,
-                reviews: 2341,
-                category: 'electronics',
-                stock: 1543,
-                variants: ['Black', 'White', 'Blue']
-            },
-            {
-                id: 'CJ-992384',
-                name: 'Smart Watch Pro Fitness Tracker Heart Rate',
-                supplier: 'CJ Dropshipping',
-                supplierLogo: 'CJ',
-                image: 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400&h=400&fit=crop',
-                costPrice: 12.40,
-                retailPrice: 49.99,
-                shipping: 3.50,
-                rating: 4.6,
-                reviews: 892,
-                category: 'electronics',
-                stock: 892,
-                variants: ['Black', 'Silver', 'Rose Gold']
-            },
-            {
-                id: 'AE-8239472',
-                name: 'LED Strip Lights RGB 5050 5M with Remote',
-                supplier: 'AliExpress',
-                supplierLogo: 'AE',
-                image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&h=400&fit=crop',
-                costPrice: 4.20,
-                retailPrice: 19.99,
-                shipping: 1.50,
-                rating: 4.9,
-                reviews: 5672,
-                category: 'electronics',
-               
-</>
+        // Load products from localStorage
+        let myProducts = JSON.parse(localStorage.getItem('xavier_my_products') || '[]');
+        
+        // Initialize display
+        updateStats();
+        renderProducts(myProducts);
+
+        function toggleApiConfig() {
+            document.getElementById('api-config').classList.toggle('hidden');
+        }
+
+        function importProduct() {
+            const url = document.getElementById('import-url').value;
+            const name = document.getElementById('import-name').value;
+            const cost = parseFloat(document.getElementById('import-cost').value) || 0;
+            const price = parseFloat(document.getElementById('import-price').value) || 0;
+            
+            if (!url || !name) {
+                alert('Please enter URL and Product Name');
+                return;
+            }
+
+            const product = {
+                id: 'PROD-' + Date.now(),
+                name: name,
+                url: url,
+                image: 'https://via.placeholder.com/400x400/1a1a2e/00ff88?text=' + encodeURIComponent(name.substring(0,10)),
+                cost: cost,
+                price: price,
+                supplier: extractDomain(url),
+                dateAdded: new Date().toLocaleDateString(),
+                profit: price - cost
+            };
+
+            myProducts.unshift(product);
+            saveProducts();
+            clearImportForm();
+            alert('Product imported successfully!');
+        }
+
+        function addCustomProduct() {
+            const name = document.getElementById('custom-name').value;
+            let image = document.getElementById('custom-image').value;
+            const cost = parseFloat(document.getElementById('custom-cost').value) || 0;
+            const price = parseFloat(document.getElementById('custom-price').value) || 0;
+            const supplier = document.getElementById('custom-supplier').value || 'Custom';
+            
+            if (!name) {
+                alert('Please enter product name');
+                return;
+            }
+
+            if (!image) {
+                image = 'https://via.placeholder.com/400x400/1a1a2e/00ff88?text=' + encodeURIComponent(name.substring(0,10));
+            }
+
+            const product = {
+                id: 'CUST-' + Date.now(),
+                name: name,
+                url: '#',
+                image: image,
+                cost: cost,
+                price: price,
+                supplier: supplier,
+                dateAdded: new Date().toLocaleDateString(),
+                profit: price - cost
+            };
+
+            myProducts.unshift(product);
+            saveProducts();
+            clearCustomForm();
+        }
+
+        function extractDomain(url) {
+            try {
+                return new URL(url).hostname.replace('www.', '');
+            } catch {
+                return 'Unknown';
+            }
+        }
+
+        function saveProducts() {
+            localStorage.setItem('xavier_my_products', JSON.stringify(myProducts));
+            renderProducts(myProducts);
+            updateStats();
+        }
+
+        function renderProducts(products) {
+            const grid = document.getElementById('product-grid');
+            document.getElementById('product-count').textContent = products.length + ' products';
+            
+            if (products.length === 0) {
+                grid.innerHTML = `
+                    <div class="text-gray-500 text-center py-12 col-span-full">
+                        <p class="text-lg mb-2">No products yet</p>
+                        <p class="text-sm">Import your first product using the forms above</p>
+                    </div>`;
+                return;
+            }
+
+            grid.innerHTML = products.map((p, idx) => `
+                <div class="quantum-panel rounded-xl p-4 border border-green-500/20 hover:border-green-500/50 transition">
+                    <img src="${p.image}" class="product-image mb-3 bg-gray-900" onerror="this.src='https://via.placeholder.com/400x400/1a1a2e/00ff88?text=No+Image'">
+                    <h4 class="font-bold text-white mb-1 truncate">${p.name}</h4>
+                    <div class="text-xs text-gray-500 mb-2">${p.supplier} • Added ${p.dateAdded}</div>
+                    
+                    <div class="grid grid-cols-2 gap-2 mb-3 text-sm">
+                        <div>
+                            <div class="text-gray-500 text-xs">Cost</div>
+                            <div class="text-red-400">$${p.cost.toFixed(2)}</div>
+                        </div>
+                        <div>
+                            <div class="text-gray-500 text-xs">Sell</div>
+                            <div class="text-green-400 font-bold">$${p.price.toFixed(2)}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center bg-black/30 rounded p-2 mb-3">
+                        <span class="text-xs text-gray-400">Profit</span>
+                        <span class="text-cyan-400 font-bold">+$${p.profit.toFixed(2)}</span>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <a href="${p.url}" target="_blank" class="flex-1 bg-green-600/30 border border-green-500 text-green-400 py-2 rounded text-center text-sm hover:bg-green-600/50">View Source</a>
+                        <button onclick="deleteProduct(${idx})" class="bg-red-600/30 border border-red-500 text-red-400 px-3 py-2 rounded text-sm hover:bg-red-600/50">🗑</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function searchInventory() {
+            const query = document.getElementById('search-inventory').value.toLowerCase();
+            const filtered = myProducts.filter(p => 
+                p.name.toLowerCase().includes(query) || 
+                p.supplier.toLowerCase().includes(query)
+            );
+            renderProducts(filtered);
+        }
+
+        function deleteProduct(index) {
+            if (confirm('Delete this product from your catalog?')) {
+                myProducts.splice(index, 1);
+                saveProducts();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('total-products').textContent = myProducts.length;
+            
+            if (myProducts.length === 0) {
+                document.getElementById('avg-margin').textContent = '0%';
+                document.getElementById('total-value').textContent = '$0';
+                document.getElementById('potential-profit').textContent = '$0';
+                return;
+            }
+
+            const totalCost = myProducts.reduce((sum, p) => sum + p.cost, 0);
+            const totalPrice = myProducts.reduce((sum, p) => sum + p.price, 0);
+            const totalProfit = myProducts.reduce((sum, p) => sum + p.profit, 0);
+            const avgMargin = ((totalProfit / totalCost) * 100) || 0;
+
+            document.getElementById('avg-margin').textContent = avgMargin.toFixed(1) + '%';
+            document.getElementById('total-value').textContent = '$' + totalCost.toFixed(2);
+            document.getElementById('potential-profit').textContent = '$' + totalProfit.toFixed(2);
+        }
+
+        function clearImportForm() {
+            document.getElementById('import-url').value = '';
+            document.getElementById('import-name').value = '';
+            document.getElementById('import-cost').value = '';
+            document.getElementById('import-price').value = '';
+        }
+
+        function clearCustomForm() {
+            document.getElementById('custom-name').value = '';
+            document.getElementById('custom-image').value = '';
+            document.getElementById('custom-cost').value = '';
+            document.getElementById('custom-price').value = '';
+            document.getElementById('custom-supplier').value = '';
+        }
+
+        // Note: Real API integration would require backend proxy due to CORS
+        // To connect real suppliers, deploy a simple backend or use:
+        // - AliExpress API (requires partnership)
+        // - CJ Dropshipping API (open)
+        // - Shopify/ WooCommerce APIs
+    </script>
+    
+    <script src="guard.js"></script>
+</body>
+</html>
